@@ -26,6 +26,14 @@
   resolved "https://registry.yarnpkg.com/@fastify/deepmerge/-/deepmerge-1.3.0.tgz#8116858108f0c7d9fd460d05a7d637a13fe3239a"
   integrity sha512-J8TOSBq3SoZbDhM9+R/u77hP93gz/rajSA+K2kGyijPpORPWUXHUpTaleoj+92As0S9uPRP7Oi8IqMf0u+ro6A==
 
+"@fastify/env@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@fastify/env/-/env-4.4.0.tgz#184be057f24bac4e07ea6099aa041feae9f44b47"
+  integrity sha512-JEg6wo05KOhmRJ1lBTjJ8zQVUJmxInaavsMkfO1cfYWXOfdQXO48k01LneOmM5Y8dwwQ6ff7WUEi/dHl8YidIQ==
+  dependencies:
+    env-schema "^6.0.0"
+    fastify-plugin "^4.0.0"
+
 "@fastify/error@^3.3.0", "@fastify/error@^3.4.0":
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/@fastify/error/-/error-3.4.1.tgz#b14bb4cac3dd4ec614becbc643d1511331a6425c"
@@ -192,7 +200,7 @@ ajv-formats@^3.0.1:
   dependencies:
     ajv "^8.0.0"
 
-ajv@^8.0.0, ajv@^8.10.0, ajv@^8.11.0:
+ajv@^8.0.0, ajv@^8.10.0, ajv@^8.11.0, ajv@^8.12.0:
   version "8.16.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.16.0.tgz#22e2a92b94f005f7e0f9c9d39652ef0b8f6f0cb4"
   integrity sha512-F0twR8U1ZU67JIEtekUcLkXkoO5mMMmgGD8sK/xUFzJ805jxHQl92hImFAqqXMyMYjSPOyUPAwHYhB72g5sTXw==
@@ -405,7 +413,12 @@ destroy@~1.0.4:
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
   integrity sha512-3NdhDuEXnfun/z7x9GOElY49LoqVHoGScmOKwmxhsS8N5Y+Z8KyPPDnaSzqWgYt/ji4mqwfTS34Htrk0zPIXVg==
 
-dotenv@^16.0.0:
+dotenv-expand@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv-expand/-/dotenv-expand-10.0.0.tgz#12605d00fb0af6d0a592e6558585784032e4ef37"
+  integrity sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==
+
+dotenv@^16.0.0, dotenv@^16.4.5:
   version "16.4.5"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.5.tgz#cdd3b3b604cb327e286b4762e13502f717cb099f"
   integrity sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==
@@ -446,6 +459,15 @@ end-of-stream@^1.1.0:
   integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
   dependencies:
     once "^1.4.0"
+
+env-schema@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/env-schema/-/env-schema-6.0.0.tgz#94be5a173306c10523c96fd1dd6ac986312f1532"
+  integrity sha512-/IHp1EmrfubUOfF1wfe8koDWM5/dxUDylHANPNrPyrsYWJ7KRiB8gXbjtqQBujmOhpSpXXOhhnaL+meb+MaGtA==
+  dependencies:
+    ajv "^8.12.0"
+    dotenv "^16.4.5"
+    dotenv-expand "10.0.0"
 
 escape-html@~1.0.3:
   version "1.0.3"

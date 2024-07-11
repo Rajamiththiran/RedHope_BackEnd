@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model migrations {
+  id     Int      @id @default(autoincrement())
+  name   String   @db.VarChar(255)
+  run_on DateTime @db.DateTime(0)
+}
+
+model staffs {
+  id                  Int       @id @default(autoincrement()) @db.UnsignedInt
+  full_name           String    @db.VarChar(255)
+  phone_number        String    @unique(map: "phone_number") @db.VarChar(255)
+  country_code        String    @db.VarChar(255)
+  id_number           String    @db.VarChar(255)
+  email               String    @unique(map: "email") @db.VarChar(255)
+  country             String?   @db.VarChar(255)
+  address             String?   @db.Text
+  city                String?   @db.VarChar(255)
+  zip                 String?   @db.VarChar(255)
+  marital_status      String?   @db.VarChar(255)
+  gender              String?   @db.VarChar(255)
+  date_of_birth       String?   @db.VarChar(255)
+  nationality         String?   @db.VarChar(255)
+  employee_id         String    @db.VarChar(255)
+  epf_number          String?   @db.VarChar(255)
+  job_title           String    @db.VarChar(255)
+  department          String?   @db.VarChar(255)
+  work_location       String?   @db.VarChar(255)
+  employment_status   String    @db.VarChar(255)
+  work_hours          String?   @db.VarChar(255)
+  work_shift          String?   @db.VarChar(255)
+  supervisor_id       Int?      @db.UnsignedInt
+  pay_type            String    @db.VarChar(255)
+  basic_salary        Float
+  overtime_rate       Float
+  no_pay_rate         Float
+  messaging_option    String    @db.VarChar(255)
+  bank_name           String?   @db.VarChar(255)
+  bank_account_number String?   @db.VarChar(255)
+  branch_address      String?   @db.VarChar(255)
+  account_holder_name String?   @db.VarChar(255)
+  profile_image_url   String?   @db.Text
+  joined_at           DateTime? @db.Timestamp(0)
+  left_at             DateTime? @db.Timestamp(0)
+  cv_url              String?   @db.Text
+  is_epf              Boolean?  @default(false)
+  is_etf              Boolean?  @default(false)
+  created_at          DateTime? @db.Timestamp(0)
+  modified_at         DateTime? @db.Timestamp(0)
+  deleted_at          DateTime? @db.Timestamp(0)
+
+  @@index([supervisor_id], map: "staffs_staffs_id_foreign")
+}

@@ -166,4 +166,77 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.post("/refresh", {
+    preValidation: [fastify.isHospital],
+    schema: {
+      tags: ["Main"],
+      security: [{ bearerAuth: [] }],
+      body: {
+        type: "object",
+        required: ["refresh_token"],
+        properties: {
+          refresh_token: {
+            type: "string",
+          },
+        },
+      },
+    },
+
+    handler: async (request, reply) => {
+      try {
+        const hospital_token = await fastify.prisma.user_tokens.findUnique({
+          where: {
+            token: request.body.refresh_token,
+          },
+        });
+
+        if (!hospital_token) {
+          throw new Error("Invalid refresh token!");
+        }
+
+        const create_date = moment(hospital_token.created_at);
+        const now = moment();
+
+        const diffInDays = now.diff(create_date, "days");
+        if (diffInDays > 30) {
+          throw new Error("Refresh token has been expired.");
+        }
+        const hospitals = await fastify.prisma.hospitals.findUnique({
+          where: {
+            email: hospital_token.email,
+          },
+          select: {
+            id: true,
+            //   is_active: true,
+            email: true,
+            name: true,
+            phone_number: true,
+            address: true,
+          },
+        });
+        // if (!hospitals.is_active) {
+        //     throw new Error("This user is not active!");
+        //   }
+        let token = {};
+        let user = {};
+        const accessToken = fastify.jwt.sign({
+          id: hospitals.id,
+          role: "Hospital",
+          email: hospitals.email,
+        });
+        const refreshToken = request.body.refresh_token;
+        token.access = accessToken;
+        token.referesh = refreshToken;
+        hospital_user.token = token;
+        hospital_user.name = hospitals.name;
+        hospital_user.phone_number = hospitals.phone_number;
+        hospital_user.address = hospitals.address;
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
 };

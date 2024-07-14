@@ -62,3 +62,12 @@ model requests {
   @@index([donor_id], map: "request_donor_fk")
   @@index([hospital_id], map: "request_hospital_fk")
 }
+
+model user_tokens {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  email       String    @db.VarChar(255)
+  token       String    @unique(map: "token") @db.VarChar(255)
+  created_at  DateTime? @db.Timestamp(0)
+  modified_at DateTime? @db.Timestamp(0)
+  deleted_at  DateTime? @db.Timestamp(0)
+}

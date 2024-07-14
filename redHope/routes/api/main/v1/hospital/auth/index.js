@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 module.exports = async function (fastify, opts) {
   fastify.post("/register", {
     schema: {
-      tags: ["hospital", "auth"],
+      tags: ["Main"],
       body: {
         type: "object",
         required: [
@@ -86,6 +86,79 @@ module.exports = async function (fastify, opts) {
         hospital_user.address = hospitals.address;
 
         reply.send(user);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
+
+  fastify.post("/login", {
+    schema: {
+      tags: ["Main"],
+      body: {
+        type: "object",
+        required: ["email", "password"],
+        properties: {
+          email: {
+            type: "string",
+          },
+          password: {
+            type: "string",
+          },
+        },
+      },
+    },
+
+    handler: async (request, reply) => {
+      try {
+        const hospitals = await fastify.prisma.hospitals.findUnique({
+          where: {
+            email: request.body.email,
+          },
+          select: {
+            id: true,
+            email: true,
+            password: true,
+            // is_active: true,
+            name: true,
+            phone_number: true,
+            address: true,
+          },
+        });
+        if (!hospitals) {
+          throw new Error("Incorrect Email or Password!");
+        }
+        // if (!hospitals.is_active) {
+        //     throw new Error("The User is not Active");
+        //   }
+
+        const validation = await bcrypt.compare(
+          request.body.password,
+          hospitals.password
+        );
+        if (!validation) {
+          throw new Error("Incorrect Email or Password!");
+        }
+
+        let token = {};
+        let hospital_user = {};
+        const accessToken = fastify.jwt.sign({
+          id: hospitals.id,
+          role: "Hospital",
+          email: hospitals.email,
+        });
+        const refreshToken = await fastify.token.create({
+          email: hospitals.email,
+        });
+
+        token.access = accessToken;
+        token.refresh = refreshToken;
+        hospital_user.token = token;
+        hospital_user.name = hospitals.name;
+        hospital_user.phone_number = hospitals.phone_number;
+        hospital_user.address = hospitals.address;
       } catch (error) {
         reply.send(error);
       } finally {

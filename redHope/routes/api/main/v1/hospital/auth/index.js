@@ -159,6 +159,8 @@ module.exports = async function (fastify, opts) {
         hospital_user.name = hospitals.name;
         hospital_user.phone_number = hospitals.phone_number;
         hospital_user.address = hospitals.address;
+
+        reply.send(hospital_user);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -168,7 +170,7 @@ module.exports = async function (fastify, opts) {
   });
 
   fastify.post("/refresh", {
-    preValidation: [fastify.isHospital],
+    preValidation: [fastify.isHospital], //?ALSKDFHGLKSNDFG.SLKDHHLGHKSDGPOHOJDS;GHD;XLFKGMNK
     schema: {
       tags: ["Main"],
       security: [{ bearerAuth: [] }],
@@ -219,7 +221,7 @@ module.exports = async function (fastify, opts) {
         //     throw new Error("This user is not active!");
         //   }
         let token = {};
-        let user = {};
+        let hospital_user = {};
         const accessToken = fastify.jwt.sign({
           id: hospitals.id,
           role: "Hospital",
@@ -232,6 +234,46 @@ module.exports = async function (fastify, opts) {
         hospital_user.name = hospitals.name;
         hospital_user.phone_number = hospitals.phone_number;
         hospital_user.address = hospitals.address;
+
+        reply.send(hospital_user);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
+
+  fastify.post("/logout", {
+    preValidation: [fastify.authIsHospital], //? SHDF;LIASFHGLKASFG;ADJHL;SDJG;LHSJD;LG
+    schema: {
+      tags: ["Main"],
+      security: [{ bearerAuth: [] }],
+      body: {
+        type: "object",
+        required: ["refresh_token"],
+        properties: {
+          refresh_token: {
+            type: "string",
+          },
+        },
+      },
+    },
+
+    handler: async (request, reply) => {
+      try {
+        const hospital_token = await fastify.prisma.user_tokens.findUnique({
+          where: {
+            token: request.body.refresh_token,
+          },
+        });
+        if (!hospital_token) {
+          throw new Error("Invalid refresh token.");
+        }
+        const refreshToken = await fastify.token.delete({
+          token: request.body.refresh_token,
+        });
+        reply.send(refreshToken);
       } catch (error) {
         reply.send(error);
       } finally {

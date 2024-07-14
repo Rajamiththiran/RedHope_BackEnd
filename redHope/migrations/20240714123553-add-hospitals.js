@@ -43,14 +43,12 @@ exports.up = function (db) {
     created_at: {
       type: "timestamp",
       timezone: true,
-      notNull: true,
-      defaultValue: new String("CURRENT_TIMESTAMP"),
+      null: true,
     },
     modified_at: {
       type: "timestamp",
       timezone: true,
-      notNull: true,
-      defaultValue: new String("CURRENT_TIMESTAMP"),
+      null: true,
     },
     deleted_at: {
       type: "timestamp",

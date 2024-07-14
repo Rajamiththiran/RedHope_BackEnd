@@ -40,6 +40,10 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    country_code: {
+      type: "string",
+      notNull: true,
+    },
     password: {
       type: "string",
       notNull: true,

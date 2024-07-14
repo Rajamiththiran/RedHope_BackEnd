@@ -42,6 +42,10 @@ exports.up = function (db) {
       type: "string",
       notNull: false,
     },
+    country_code: {
+      type: "string",
+      notNull: true,
+    },
     location: {
       type: "string",
       notNull: false,

@@ -44,6 +44,10 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    country_code: {
+      type: "string",
+      notNull: true,
+    },
     blood_type: {
       type: "string",
       notNull: true,

@@ -14,14 +14,15 @@ model migrations {
 }
 
 model hospitals {
-  id          Int       @id @default(autoincrement()) @db.UnsignedInt
-  name        String    @db.VarChar(255)
-  address     String    @db.Text
-  email       String    @unique(map: "email") @db.VarChar(255)
-  password    String    @db.VarChar(255)
-  created_at  DateTime? @db.Timestamp(0)
-  modified_at DateTime? @db.Timestamp(0)
-  deleted_at  DateTime? @db.Timestamp(0)
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  name         String    @db.VarChar(255)
+  address      String    @db.Text
+  email        String    @unique(map: "email") @db.VarChar(255)
+  phone_number String    @db.VarChar(255)
+  password     String    @db.VarChar(255)
+  created_at   DateTime? @db.Timestamp(0)
+  modified_at  DateTime? @db.Timestamp(0)
+  deleted_at   DateTime? @db.Timestamp(0)
 }
 
 model donors {

@@ -36,6 +36,10 @@ exports.up = function (db) {
       notNull: true,
       unique: true,
     },
+    phone_number: {
+      type: "string",
+      notNull: true,
+    },
     password: {
       type: "string",
       notNull: true,

@@ -170,7 +170,7 @@ module.exports = async function (fastify, opts) {
   });
 
   fastify.post("/refresh", {
-    preValidation: [fastify.isHospital], //?ALSKDFHGLKSNDFG.SLKDHHLGHKSDGPOHOJDS;GHD;XLFKGMNK
+    //preValidation: [fastify.isHospital], //?ALSKDFHGLKSNDFG.SLKDHHLGHKSDGPOHOJDS;GHD;XLFKGMNK
     schema: {
       tags: ["Main"],
       security: [{ bearerAuth: [] }],
@@ -245,7 +245,7 @@ module.exports = async function (fastify, opts) {
   });
 
   fastify.post("/logout", {
-    preValidation: [fastify.authIsHospital], //? SHDF;LIASFHGLKASFG;ADJHL;SDJG;LHSJD;LG
+    //preValidation: [fastify.authIsHospital], //? SHDF;LIASFHGLKASFG;ADJHL;SDJG;LHSJD;LG
     schema: {
       tags: ["Main"],
       security: [{ bearerAuth: [] }],

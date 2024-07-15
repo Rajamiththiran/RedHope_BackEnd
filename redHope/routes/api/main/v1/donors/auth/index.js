@@ -222,4 +222,39 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.post("/logout", {
+    schema: {
+      tags: ["Main"],
+      body: {
+        type: "object",
+        required: ["refresh_token"],
+        properties: {
+          refresh_token: {
+            type: "string",
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const donor_token = await fastify.prisma.user_tokens.findUnique({
+          where: {
+            token: request.body.refresh_token,
+          },
+        });
+        if (!donor_token) {
+          throw new Error("Invalid refresh token.");
+        }
+        const refreshToken = await fastify.token.delete({
+          token: request.body.refresh_token,
+        });
+        reply.send(refreshToken);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
 };

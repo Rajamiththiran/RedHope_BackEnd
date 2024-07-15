@@ -67,7 +67,7 @@ module.exports = async function (fastify, opts) {
             country_code: request.body.country_code,
             blood_type: request.body.blood_type,
             created_at: moment().toISOString(),
-            updated_at: moment().toISOString(),
+            modified_at: moment().toISOString(),
           },
         });
 
@@ -149,6 +149,69 @@ module.exports = async function (fastify, opts) {
         donor.token = token;
 
         delete donor.password;
+        delete donor.is_active;
+        delete donor.created_at;
+        reply.send(donor);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
+
+  fastify.post("/refresh", {
+    schema: {
+      tags: ["Main"],
+      body: {
+        type: "object",
+        required: ["refresh_token"],
+        properties: {
+          refresh_token: {
+            type: "string",
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const donor_token = await fastify.prisma.user_tokens.findUnique({
+          where: {
+            token: request.body.refresh_token,
+          },
+        });
+        if (!donor_token) {
+          throw new Error("Invalid refresh token.");
+        }
+
+        const create_date = moment(donor_token.created_at);
+        const now = moment();
+
+        const diffInDays = now.diff(create_date, "days");
+        if (diffInDays > 30) {
+          throw new Error("Refresh token has been expired.");
+        }
+
+        const donor = await fastify.prisma.donors.findUnique({
+          where: {
+            email: donor_token.email,
+          },
+        });
+        if (!donor.is_active) {
+          throw new Error("This user is not active.");
+        }
+        let token = {};
+        const accessToken = fastify.jwt.sign({
+          id: donor.id,
+          role: "Donor",
+          email: donor.email,
+          name: donor.name,
+        });
+        const refreshToken = request.body.refresh_token;
+        token.access = accessToken;
+        token.refresh = refreshToken;
+        donor.token = token;
+
         delete donor.is_active;
         delete donor.created_at;
         reply.send(donor);

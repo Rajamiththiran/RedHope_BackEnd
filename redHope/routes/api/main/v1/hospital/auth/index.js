@@ -40,7 +40,7 @@ module.exports = async function (fastify, opts) {
     },
     handler: async (request, reply) => {
       try {
-        const existingHospital = await fastify.hospitals.findUnique({
+        const existingHospital = await fastify.prisma.hospitals.findUnique({
           where: {
             email: request.body.email,
           },
@@ -75,7 +75,7 @@ module.exports = async function (fastify, opts) {
           name: hospitals.name,
         });
         const refreshToken = await fastify.token.create({
-          email: jp_user.email,
+          email: hospitals.email,
         });
 
         token.access = accessToken;
@@ -85,7 +85,7 @@ module.exports = async function (fastify, opts) {
         hospital_user.phone_number = hospitals.phone_number;
         hospital_user.address = hospitals.address;
 
-        reply.send(user);
+        reply.send(hospital_user);
       } catch (error) {
         reply.send(error);
       } finally {

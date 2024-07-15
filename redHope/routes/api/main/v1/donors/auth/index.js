@@ -100,4 +100,63 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.post("/login", {
+    schema: {
+      tags: ["Main"],
+      body: {
+        required: ["email", "password"],
+        properties: {
+          email: {
+            type: "string",
+          },
+          password: {
+            type: "string",
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const donor = await fastify.prisma.donors.findUnique({
+          where: {
+            email: request.body.email,
+          },
+        });
+        if (!donor) {
+          throw new Error("Email or Password wrong.");
+        }
+        //   if (!user.is_active) {
+        //     throw new Error("This user is not active.");
+        //   }
+
+        const validation = await bcrypt.compare(
+          request.body.password,
+          donor.password
+        );
+        if (!validation) {
+          throw new Error("Email or Password wrong.");
+        }
+        let token = {};
+        const accessToken = fastify.jwt.sign({
+          id: donor.id,
+          role: "Donor",
+          email: donor.email,
+        });
+        const refreshToken = await fastify.token.create({ email: donor.email });
+        token.access = accessToken;
+        token.refresh = refreshToken;
+        donor.token = token;
+
+        delete donor.password;
+        delete donor.is_active;
+        delete donor.created_at;
+        reply.send(donor);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
 };

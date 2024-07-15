@@ -34,7 +34,7 @@
     env-schema "^6.0.0"
     fastify-plugin "^4.0.0"
 
-"@fastify/error@^3.3.0", "@fastify/error@^3.4.0":
+"@fastify/error@^3.0.0", "@fastify/error@^3.3.0", "@fastify/error@^3.4.0":
   version "3.4.1"
   resolved "https://registry.npmjs.org/@fastify/error/-/error-3.4.1.tgz"
   integrity sha512-wWSvph+29GR783IhmvdwWnN4bUxTD01Vm5Xad4i7i1VuAOItLvbPAb69sb0IQ2N57yprvhNIwAP5B6xfKTmjmQ==
@@ -45,6 +45,17 @@
   integrity sha512-aZAXGYo6m22Fk1zZzEUKBvut/CIIQe/BapEORnxiD5Qr0kPHqqI69NtEMCme74h+at72sPhbkb4ZrLd1W3KRLA==
   dependencies:
     fast-json-stringify "^5.7.0"
+
+"@fastify/jwt@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.npmjs.org/@fastify/jwt/-/jwt-8.0.1.tgz"
+  integrity sha512-295bd7V6bDCnZOu8MAQgM6r7V1KILB+kdEq1q6nbHfXCnML569n7NSo3WzeLDG6IAqDl+Rhzi1vjxwaNHhRCBA==
+  dependencies:
+    "@fastify/error" "^3.0.0"
+    "@lukeed/ms" "^2.0.0"
+    fast-jwt "^4.0.0"
+    fastify-plugin "^4.0.0"
+    steed "^1.1.3"
 
 "@fastify/merge-json-schemas@^0.1.0":
   version "0.1.1"
@@ -148,6 +159,13 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@prisma/client@^4.8.0":
+  version "4.16.2"
+  resolved "https://registry.npmjs.org/@prisma/client/-/client-4.16.2.tgz"
+  integrity sha512-qCoEyxv1ZrQ4bKy39GnylE8Zq31IRmm8bNhNbZx7bF2cU5aiCCnSa93J2imF88MBjn7J9eUQneNxUQVJdl/rPQ==
+  dependencies:
+    "@prisma/engines-version" "4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81"
+
 "@prisma/client@^5.16.2":
   version "5.16.2"
   resolved "https://registry.npmjs.org/@prisma/client/-/client-5.16.2.tgz"
@@ -157,6 +175,11 @@
   version "5.16.2"
   resolved "https://registry.npmjs.org/@prisma/debug/-/debug-5.16.2.tgz"
   integrity sha512-ItzB4nR4O8eLzuJiuP3WwUJfoIvewMHqpGCad+64gvThcKEVOtaUza9AEJo2DPqAOa/AWkFyK54oM4WwHeew+A==
+
+"@prisma/engines-version@4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81":
+  version "4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81"
+  resolved "https://registry.npmjs.org/@prisma/engines-version/-/engines-version-4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81.tgz"
+  integrity sha512-q617EUWfRIDTriWADZ4YiWRZXCa/WuhNgLTVd+HqWLffjMSPzyM5uOWoauX91wvQClSKZU4pzI4JJLQ9Kl62Qg==
 
 "@prisma/engines-version@5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303":
   version "5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303"
@@ -285,7 +308,7 @@ argparse@^2.0.1:
   resolved "https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz"
   integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
 
-asn1.js@^5.3.0:
+asn1.js@^5.3.0, asn1.js@^5.4.1:
   version "5.4.1"
   resolved "https://registry.npmjs.org/asn1.js/-/asn1.js-5.4.1.tgz"
   integrity sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==
@@ -626,6 +649,16 @@ fast-jwt@^1.4.0:
     ecdsa-sig-formatter "^1.0.11"
     mnemonist "^0.39.0"
 
+fast-jwt@^4.0.0:
+  version "4.0.2"
+  resolved "https://registry.npmjs.org/fast-jwt/-/fast-jwt-4.0.2.tgz"
+  integrity sha512-uSG3osRm3QNEkoCMwQ25qVs+pxn0f1n4/WLE+BmKaQZSmwhFhkkimHw7MXIPprrEF01CbNI1wL/35LRvLMfn7g==
+  dependencies:
+    "@lukeed/ms" "^2.0.1"
+    asn1.js "^5.4.1"
+    ecdsa-sig-formatter "^1.0.11"
+    mnemonist "^0.39.5"
+
 fast-querystring@^1.0.0:
   version "1.1.2"
   resolved "https://registry.npmjs.org/fast-querystring/-/fast-querystring-1.1.2.tgz"
@@ -701,10 +734,18 @@ fastify-plugin@^3.0.0:
   resolved "https://registry.npmjs.org/fastify-plugin/-/fastify-plugin-3.0.1.tgz"
   integrity sha512-qKcDXmuZadJqdTm6vlCqioEbyewF60b/0LOFCcYN1B6BIZGlYJumWWOYs70SFYLDAH4YqdE1cxH/RKMG7rFxgA==
 
-fastify-plugin@^4.0.0:
+fastify-plugin@^4.0.0, fastify-plugin@^4.4.0:
   version "4.5.1"
   resolved "https://registry.npmjs.org/fastify-plugin/-/fastify-plugin-4.5.1.tgz"
   integrity sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==
+
+fastify-prisma-client@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.npmjs.org/fastify-prisma-client/-/fastify-prisma-client-5.0.0.tgz"
+  integrity sha512-fwDey3L+n23skdzzvBZTCQko3PCc6yHbGO9CSQBXPJniZG6qvYnhaL3xrURX0UtZ2rkW6MIRsV4JQv2M45geqw==
+  dependencies:
+    "@prisma/client" "^4.8.0"
+    fastify-plugin "^4.4.0"
 
 "fastify-static-deprecated@npm:fastify-static@4.6.1":
   version "4.6.1"
@@ -1219,7 +1260,7 @@ mkdirp@^1.0.3:
   resolved "https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-mnemonist@^0.39.0:
+mnemonist@^0.39.0, mnemonist@^0.39.5:
   version "0.39.8"
   resolved "https://registry.npmjs.org/mnemonist/-/mnemonist-0.39.8.tgz"
   integrity sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==

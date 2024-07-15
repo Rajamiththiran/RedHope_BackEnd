@@ -12,9 +12,10 @@ module.exports = async function (fastify, opts) {
           "name",
           "email",
           "password",
+          "address",
           "phone_number",
           "country_code",
-          "address",
+          "blood_type",
         ],
         properties: {
           name: {
@@ -26,13 +27,16 @@ module.exports = async function (fastify, opts) {
           password: {
             type: "string",
           },
+          address: {
+            type: "string",
+          },
           phone_number: {
             type: "string",
           },
           country_code: {
             type: "string",
           },
-          address: {
+          blood_type: {
             type: "string",
           },
         },
@@ -40,52 +44,55 @@ module.exports = async function (fastify, opts) {
     },
     handler: async (request, reply) => {
       try {
-        const existingHospital = await fastify.prisma.hospitals.findUnique({
+        const donor = await fastify.prisma.donors.findUnique({
           where: {
             email: request.body.email,
           },
         });
 
-        if (existingHospital) {
+        if (donor) {
           throw new Error("The email already Exist!!");
         }
 
         const salt = await bcrypt.genSalt(10);
         const password = await bcrypt.hash(request.body.password, salt);
-        const hospitals = await fastify.prisma.hospitals.create({
+
+        const donor_user = await fastify.prisma.donors.create({
           data: {
+            name: request.body.name,
             email: request.body.email,
             password: password,
-            name: request.body.name,
+            address: request.body.address,
             phone_number: request.body.phone_number,
             country_code: request.body.country_code,
-            address: request.body.address,
+            blood_type: request.body.blood_type,
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
         });
 
         let token = {};
-        let hospital_user = {};
+        let newDonor = {};
 
         const accessToken = fastify.jwt.sign({
-          id: hospitals.id,
-          role: "Hospital",
-          email: hospitals.email,
-          name: hospitals.name,
+          id: donor_user.id,
+          role: "Donor",
+          email: donor_user.email,
         });
+
         const refreshToken = await fastify.token.create({
-          email: hospitals.email,
+          email: donor_user.email,
         });
 
         token.access = accessToken;
         token.refresh = refreshToken;
-        hospital_user.token = token;
-        hospital_user.name = hospitals.name;
-        hospital_user.phone_number = hospitals.phone_number;
-        hospital_user.address = hospitals.address;
+        newDonor.name = donor_user.name;
+        newDonor.address = donor_user.address;
+        newDonor.phone_number = donor_user.phone_number;
+        newDonor.country_code = donor_user.country_code;
+        newDonor.blood_type = donor_user.blood_type;
 
-        reply.send(hospital_user);
+        reply.send(newDonor);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -98,7 +105,6 @@ module.exports = async function (fastify, opts) {
     schema: {
       tags: ["Main"],
       body: {
-        type: "object",
         required: ["email", "password"],
         properties: {
           email: {
@@ -110,58 +116,42 @@ module.exports = async function (fastify, opts) {
         },
       },
     },
-
     handler: async (request, reply) => {
       try {
-        const hospitals = await fastify.prisma.hospitals.findUnique({
+        const donor = await fastify.prisma.donors.findUnique({
           where: {
             email: request.body.email,
           },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-            // is_active: true,
-            name: true,
-            phone_number: true,
-            address: true,
-          },
         });
-        if (!hospitals) {
-          throw new Error("Incorrect Email or Password!");
+        if (!donor) {
+          throw new Error("Email or Password wrong.");
         }
-        // if (!hospitals.is_active) {
-        //     throw new Error("The User is not Active");
+        //   if (!user.is_active) {
+        //     throw new Error("This user is not active.");
         //   }
 
         const validation = await bcrypt.compare(
           request.body.password,
-          hospitals.password
+          donor.password
         );
         if (!validation) {
-          throw new Error("Incorrect Email or Password!");
+          throw new Error("Email or Password wrong.");
         }
-
         let token = {};
-        let hospital_user = {};
         const accessToken = fastify.jwt.sign({
-          id: hospitals.id,
-          role: "Hospital",
-          email: hospitals.email,
-          name: hospitals.name,
+          id: donor.id,
+          role: "Donor",
+          email: donor.email,
         });
-        const refreshToken = await fastify.token.create({
-          email: hospitals.email,
-        });
-
+        const refreshToken = await fastify.token.create({ email: donor.email });
         token.access = accessToken;
         token.refresh = refreshToken;
-        hospital_user.token = token;
-        hospital_user.name = hospitals.name;
-        hospital_user.phone_number = hospitals.phone_number;
-        hospital_user.address = hospitals.address;
+        donor.token = token;
 
-        reply.send(hospital_user);
+        delete donor.password;
+        delete donor.is_active;
+        delete donor.created_at;
+        reply.send(donor);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -171,10 +161,8 @@ module.exports = async function (fastify, opts) {
   });
 
   fastify.post("/refresh", {
-    //preValidation: [fastify.isHospital], //?ALSKDFHGLKSNDFG.SLKDHHLGHKSDGPOHOJDS;GHD;XLFKGMNK
     schema: {
       tags: ["Main"],
-      security: [{ bearerAuth: [] }],
       body: {
         type: "object",
         required: ["refresh_token"],
@@ -185,59 +173,48 @@ module.exports = async function (fastify, opts) {
         },
       },
     },
-
     handler: async (request, reply) => {
       try {
-        const hospital_token = await fastify.prisma.user_tokens.findUnique({
+        const donor_token = await fastify.prisma.user_tokens.findUnique({
           where: {
             token: request.body.refresh_token,
           },
         });
-
-        if (!hospital_token) {
-          throw new Error("Invalid refresh token!");
+        if (!donor_token) {
+          throw new Error("Invalid refresh token.");
         }
 
-        const create_date = moment(hospital_token.created_at);
+        const create_date = moment(donor_token.created_at);
         const now = moment();
 
         const diffInDays = now.diff(create_date, "days");
         if (diffInDays > 30) {
           throw new Error("Refresh token has been expired.");
         }
-        const hospitals = await fastify.prisma.hospitals.findUnique({
+
+        const donor = await fastify.prisma.donors.findUnique({
           where: {
-            email: hospital_token.email,
-          },
-          select: {
-            id: true,
-            //   is_active: true,
-            email: true,
-            name: true,
-            phone_number: true,
-            address: true,
+            email: donor_token.email,
           },
         });
-        // if (!hospitals.is_active) {
-        //     throw new Error("This user is not active!");
-        //   }
+        if (!donor.is_active) {
+          throw new Error("This user is not active.");
+        }
         let token = {};
-        let hospital_user = {};
         const accessToken = fastify.jwt.sign({
-          id: hospitals.id,
-          role: "Hospital",
-          email: hospitals.email,
-          name: hospitals.name,
+          id: donor.id,
+          role: "Donor",
+          email: donor.email,
+          name: donor.name,
         });
         const refreshToken = request.body.refresh_token;
         token.access = accessToken;
-        token.referesh = refreshToken;
-        hospital_user.token = token;
-        hospital_user.name = hospitals.name;
-        hospital_user.phone_number = hospitals.phone_number;
-        hospital_user.address = hospitals.address;
+        token.refresh = refreshToken;
+        donor.token = token;
 
-        reply.send(hospital_user);
+        delete donor.is_active;
+        delete donor.created_at;
+        reply.send(donor);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -247,10 +224,8 @@ module.exports = async function (fastify, opts) {
   });
 
   fastify.post("/logout", {
-    //preValidation: [fastify.authIsHospital], //? SHDF;LIASFHGLKASFG;ADJHL;SDJG;LHSJD;LG
     schema: {
       tags: ["Main"],
-      security: [{ bearerAuth: [] }],
       body: {
         type: "object",
         required: ["refresh_token"],
@@ -261,15 +236,14 @@ module.exports = async function (fastify, opts) {
         },
       },
     },
-
     handler: async (request, reply) => {
       try {
-        const hospital_token = await fastify.prisma.user_tokens.findUnique({
+        const donor_token = await fastify.prisma.user_tokens.findUnique({
           where: {
             token: request.body.refresh_token,
           },
         });
-        if (!hospital_token) {
+        if (!donor_token) {
           throw new Error("Invalid refresh token.");
         }
         const refreshToken = await fastify.token.delete({

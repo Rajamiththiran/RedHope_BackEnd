@@ -52,10 +52,7 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
-    donation_history: {
-      type: "text",
-      notNull: true,
-    },
+
     created_at: {
       type: "timestamp",
       timezone: true,

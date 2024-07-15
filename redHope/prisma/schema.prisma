@@ -27,18 +27,17 @@ model hospitals {
 }
 
 model donors {
-  id               Int       @id @default(autoincrement()) @db.UnsignedInt
-  name             String    @db.VarChar(255)
-  email            String    @unique(map: "email") @db.VarChar(255)
-  password         String    @db.VarChar(255)
-  address          String    @db.Text
-  phone_number     String    @db.VarChar(255)
-  country_code     String    @db.VarChar(255)
-  blood_type       String    @db.VarChar(255)
-  donation_history String    @db.Text
-  created_at       DateTime? @db.Timestamp(0)
-  modified_at      DateTime? @db.Timestamp(0)
-  deleted_at       DateTime? @db.Timestamp(0)
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  name         String    @db.VarChar(255)
+  email        String    @unique(map: "email") @db.VarChar(255)
+  password     String    @db.VarChar(255)
+  address      String    @db.Text
+  phone_number String    @db.VarChar(255)
+  country_code String    @db.VarChar(255)
+  blood_type   String    @db.VarChar(255)
+  created_at   DateTime? @db.Timestamp(0)
+  modified_at  DateTime? @db.Timestamp(0)
+  deleted_at   DateTime? @db.Timestamp(0)
 }
 
 model requests {

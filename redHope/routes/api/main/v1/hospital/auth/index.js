@@ -148,6 +148,7 @@ module.exports = async function (fastify, opts) {
           id: hospitals.id,
           role: "Hospital",
           email: hospitals.email,
+          name: hospitals.name,
         });
         const refreshToken = await fastify.token.create({
           email: hospitals.email,
@@ -226,6 +227,7 @@ module.exports = async function (fastify, opts) {
           id: hospitals.id,
           role: "Hospital",
           email: hospitals.email,
+          name: hospitals.name,
         });
         const refreshToken = request.body.refresh_token;
         token.access = accessToken;

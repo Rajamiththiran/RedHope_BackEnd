@@ -14,7 +14,7 @@ module.exports = fp(async function (fastify, opts) {
           email: params.email,
           token: key,
           created_at: moment().toISOString(),
-          updated_at: moment().toISOString(),
+          modified_at: moment().toISOString(),
         },
       });
       return query.token;

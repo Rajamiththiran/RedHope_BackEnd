@@ -36,11 +36,11 @@ exports.up = function (db) {
     },
     description: {
       type: "text",
-      notNull: false,
+      null: true,
     },
     phone_number: {
       type: "string",
-      notNull: false,
+      notNull: true,
     },
     country_code: {
       type: "string",
@@ -48,7 +48,7 @@ exports.up = function (db) {
     },
     location: {
       type: "string",
-      notNull: false,
+      notNull: true,
     },
     donor_id: {
       type: "int",

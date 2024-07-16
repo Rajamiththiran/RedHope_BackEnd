@@ -59,3 +59,6 @@ profile-*
 profile*
 *clinic*
 *flamegraph*
+
+# Ignore all JSON files in the config directory
+config/*.json

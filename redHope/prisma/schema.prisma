@@ -49,9 +49,9 @@ model requests {
   request_date         DateTime  @default(now()) @db.Timestamp(0)
   status               String    @default("pending") @db.VarChar(255)
   description          String?   @db.Text
-  phone_number         String?   @db.VarChar(255)
+  phone_number         String    @db.VarChar(255)
   country_code         String    @db.VarChar(255)
-  location             String?   @db.VarChar(255)
+  location             String    @db.VarChar(255)
   donor_id             Int       @db.UnsignedInt
   hospital_id          Int       @db.UnsignedInt
   created_at           DateTime? @db.Timestamp(0)

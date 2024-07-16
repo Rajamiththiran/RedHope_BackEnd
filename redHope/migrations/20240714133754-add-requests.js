@@ -21,7 +21,7 @@ exports.up = function (db) {
     },
     urgency_level: {
       type: "string",
-      notNull: true,
+      null: true,
     },
     request_date: {
       type: "timestamp",
@@ -36,11 +36,11 @@ exports.up = function (db) {
     },
     description: {
       type: "text",
-      notNull: false,
+      null: true,
     },
     phone_number: {
       type: "string",
-      notNull: false,
+      notNull: true,
     },
     country_code: {
       type: "string",
@@ -48,36 +48,9 @@ exports.up = function (db) {
     },
     location: {
       type: "string",
-      notNull: false,
-    },
-    donor_id: {
-      type: "int",
-      unsigned: true,
       notNull: true,
-      foreignKey: {
-        name: "request_donor_fk",
-        table: "donors",
-        rules: {
-          onDelete: "CASCADE",
-          onUpdate: "CASCADE",
-        },
-        mapping: "id",
-      },
     },
-    hospital_id: {
-      type: "int",
-      unsigned: true,
-      notNull: true,
-      foreignKey: {
-        name: "request_hospital_fk",
-        table: "hospitals",
-        rules: {
-          onDelete: "CASCADE",
-          onUpdate: "CASCADE",
-        },
-        mapping: "id",
-      },
-    },
+
     created_at: {
       type: "timestamp",
       timezone: true,

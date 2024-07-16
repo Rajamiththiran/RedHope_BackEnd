@@ -3,7 +3,7 @@
 const path = require("path");
 const AutoLoad = require("@fastify/autoload");
 const fastifyEnv = require("@fastify/env");
-const fastifyJwt = require("@fastify/jwt"); // Add this line
+const fastifyJwt = require("@fastify/jwt");
 
 const schema = {
   type: "object",
@@ -16,7 +16,7 @@ const schema = {
     "AWS_REGION",
     "S3_ENDPOINT",
     "SPACE_DIR",
-    "JWT_SECRET", // Add this line
+    "JWT_SECRET",
   ],
   properties: {
     APP_URL: {
@@ -44,7 +44,6 @@ const schema = {
       type: "string",
     },
     JWT_SECRET: {
-      // Add this block
       type: "string",
     },
   },
@@ -66,6 +65,9 @@ module.exports = async function (fastify, opts) {
     fastify.register(fastifyJwt, {
       secret: process.env.JWT_SECRET,
     });
+
+    // Register Firebase plugin
+    fastify.register(require("./plugins/firebase"));
 
     // This loads all plugins defined in plugins
     fastify.register(AutoLoad, {

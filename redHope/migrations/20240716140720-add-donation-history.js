@@ -15,7 +15,7 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db) {
-  return db.createTable("donors", {
+  return db.createTable("donation_history", {
     id: {
       type: "int",
       unsigned: true,
@@ -23,49 +23,55 @@ exports.up = function (db) {
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: "string",
+    donor_id: {
+      type: "int",
+      unsigned: true,
       notNull: true,
+      foreignKey: {
+        name: "donation_history_donor_id_fk",
+        table: "donors",
+        mapping: "id",
+        rules: {
+          onDelete: "CASCADE",
+          onUpdate: "RESTRICT",
+        },
+      },
     },
-    email: {
-      type: "string",
-      notNull: true,
-      unique: true,
-    },
-    password: {
-      type: "string",
+    donation_date: {
+      type: "date",
       notNull: true,
     },
     address: {
       type: "text",
       notNull: true,
     },
-    phone_number: {
-      type: "string",
-      notNull: true,
-    },
-    country_code: {
-      type: "string",
-      notNull: true,
-    },
     blood_type: {
       type: "string",
       notNull: true,
     },
-    fcm_token: {
+    volume: {
+      type: "decimal",
+      null: true,
+    },
+    donation_type: {
       type: "string",
       null: true,
     },
-
+    description: {
+      type: "text",
+      null: true,
+    },
     created_at: {
       type: "timestamp",
       timezone: true,
-      null: true,
+      notNull: true,
+      defaultValue: new String("CURRENT_TIMESTAMP"),
     },
     modified_at: {
       type: "timestamp",
       timezone: true,
-      null: true,
+      notNull: true,
+      defaultValue: new String("CURRENT_TIMESTAMP"),
     },
     deleted_at: {
       type: "timestamp",
@@ -76,7 +82,7 @@ exports.up = function (db) {
 };
 
 exports.down = function (db) {
-  return db.dropTable("donors");
+  return db.dropTable("donation_history");
 };
 
 exports._meta = {

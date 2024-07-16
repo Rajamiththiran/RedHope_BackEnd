@@ -223,6 +223,37 @@ module.exports = async function (fastify, opts) {
     },
   });
 
+  fastify.post("/updateFCMToken", {
+    schema: {
+      tags: ["Donors"],
+      body: {
+        type: "object",
+        required: ["donorId", "fcmToken"],
+        properties: {
+          donorId: { type: "integer" },
+          fcmToken: { type: "string" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { donorId, fcmToken } = request.body;
+        await fastify.prisma.donors.update({
+          where: { id: donorId },
+          data: { fcm_token: fcmToken },
+        });
+        reply.send({ message: "FCM token updated successfully" });
+      } catch (error) {
+        reply.code(500).send({
+          message: "Error updating FCM token",
+          error: error.message,
+        });
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
+
   fastify.post("/logout", {
     schema: {
       tags: ["Main"],

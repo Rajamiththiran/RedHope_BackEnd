@@ -70,3 +70,19 @@ model user_tokens {
   modified_at DateTime? @db.Timestamp(0)
   deleted_at  DateTime? @db.Timestamp(0)
 }
+
+model donation_history {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  donor_id      Int       @db.UnsignedInt
+  donation_date DateTime  @db.Date
+  address       String    @db.Text
+  blood_type    String    @db.VarChar(255)
+  volume        Decimal?  @db.Decimal(10, 0)
+  donation_type String?   @db.VarChar(255)
+  description   String?   @db.Text
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  modified_at   DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at    DateTime? @db.Timestamp(0)
+
+  @@index([donor_id], map: "donation_history_donor_id_fk")
+}

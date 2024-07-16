@@ -35,6 +35,7 @@ model donors {
   phone_number String    @db.VarChar(255)
   country_code String    @db.VarChar(255)
   blood_type   String    @db.VarChar(255)
+  fcm_token    String?   @db.VarChar(255)
   created_at   DateTime? @db.Timestamp(0)
   modified_at  DateTime? @db.Timestamp(0)
   deleted_at   DateTime? @db.Timestamp(0)

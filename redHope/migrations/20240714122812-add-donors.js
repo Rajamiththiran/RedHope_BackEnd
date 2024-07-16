@@ -52,6 +52,10 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    fcm_token: {
+      type: "string",
+      null: true,
+    },
 
     created_at: {
       type: "timestamp",

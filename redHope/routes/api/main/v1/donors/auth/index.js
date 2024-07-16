@@ -225,7 +225,7 @@ module.exports = async function (fastify, opts) {
 
   fastify.post("/updateFCMToken", {
     schema: {
-      tags: ["Donors"],
+      tags: ["Main"],
       body: {
         type: "object",
         required: ["donorId", "fcmToken"],
@@ -238,10 +238,25 @@ module.exports = async function (fastify, opts) {
     handler: async (request, reply) => {
       try {
         const { donorId, fcmToken } = request.body;
+
+        // First, check if the donor exists
+        const donor = await fastify.prisma.donors.findUnique({
+          where: { id: donorId },
+        });
+
+        if (!donor) {
+          return reply.code(404).send({
+            message: "Donor not found",
+            error: `No donor found with id ${donorId}`,
+          });
+        }
+
+        // If donor exists, update the FCM token
         await fastify.prisma.donors.update({
           where: { id: donorId },
           data: { fcm_token: fcmToken },
         });
+
         reply.send({ message: "FCM token updated successfully" });
       } catch (error) {
         reply.code(500).send({

@@ -1,35 +1,74 @@
-'use strict'
+"use strict";
 
-// This file contains code that we reuse
-// between our tests.
+const Fastify = require("fastify");
+const path = require("node:path");
+const AutoLoad = require("@fastify/autoload");
+const { PrismaClient } = require("@prisma/client");
+require("dotenv").config();
 
-const { build: buildApplication } = require('fastify-cli/helper')
-const path = require('node:path')
-const AppPath = path.join(__dirname, '..', 'app.js')
-
-// Fill in this config with all the configurations
-// needed for testing the application
-function config () {
-  return {}
+function config() {
+  return {
+    database: {
+      url: process.env.TEST_DATABASE_URL || process.env.DATABASE_URL,
+    },
+    jwt: {
+      secret: process.env.JWT_SECRET,
+    },
+  };
 }
 
-// automatically build and tear down our instance
-async function build (t) {
-  // you can set all the options supported by the fastify CLI command
-  const argv = [AppPath]
+async function build(t) {
+  const app = Fastify();
 
-  // fastify-plugin ensures that all decorators
-  // are exposed for testing purposes, this is
-  // different from the production setup
-  const app = await buildApplication(argv, config())
+  // Register plugins
+  await app.register(AutoLoad, {
+    dir: path.join(__dirname, "..", "plugins"),
+    options: Object.assign({}, config()),
+  });
 
-  // close the app after we are done
-  t.after(() => app.close())
+  // Setup Prisma
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: config().database.url,
+      },
+    },
+  });
+  await prisma.$connect();
+  app.decorate("prisma", prisma);
 
-  return app
+  // Setup JWT
+  await app.register(require("@fastify/jwt"), {
+    secret: config().jwt.secret,
+  });
+
+  // Mock token plugin
+  app.decorate("token", {
+    create: async (payload) => {
+      return "mock-refresh-token-" + payload.email;
+    },
+    delete: async (token) => {
+      return { success: true };
+    },
+  });
+
+  // Load your routes
+  await app.register(AutoLoad, {
+    dir: path.join(__dirname, "..", "routes"),
+    options: Object.assign({}, config()),
+  });
+
+  await app.ready();
+
+  t.after(async () => {
+    await prisma.$disconnect();
+    await app.close();
+  });
+
+  return app;
 }
 
 module.exports = {
   config,
-  build
-}
+  build,
+};

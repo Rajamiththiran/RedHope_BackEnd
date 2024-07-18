@@ -1,6 +1,21 @@
 "use strict";
 const moment = require("moment");
 
+async function findMatchingDonors(fastify, request) {
+  return await fastify.prisma.donors.findMany({
+    where: {
+      blood_type: request.blood_type_requested,
+      // Add any other criteria for matching donors
+    },
+  });
+}
+
+async function sendNotificationsToMatchingDonors(fastify, donors, request) {
+  // Placeholder for notification logic
+  // You'll need to implement this based on your notification service
+  console.log(`Sending notifications to ${donors.length} matching donors`);
+}
+
 module.exports = async function (fastify, opts) {
   fastify.post("/create", {
     schema: {
@@ -15,7 +30,7 @@ module.exports = async function (fastify, opts) {
           "phone_number",
           "country_code",
           "location",
-          "request_date", // Adding this back to required fields
+          "request_date",
         ],
         properties: {
           requester_name: { type: "string" },
@@ -70,5 +85,3 @@ module.exports = async function (fastify, opts) {
     },
   });
 };
-
-// ... rest of the code remains the same ...

@@ -1,8 +1,7 @@
 "use strict";
 
-const { build: buildApplication } = require("fastify-cli/helper");
+const Fastify = require("fastify");
 const path = require("node:path");
-const AppPath = path.join(__dirname, "..", "app.js");
 const AutoLoad = require("@fastify/autoload");
 const { PrismaClient } = require("@prisma/client");
 require("dotenv").config();
@@ -19,12 +18,10 @@ function config() {
 }
 
 async function build(t) {
-  const argv = [AppPath];
-
-  const app = await buildApplication(argv, config());
+  const app = Fastify();
 
   // Register plugins
-  app.register(AutoLoad, {
+  await app.register(AutoLoad, {
     dir: path.join(__dirname, "..", "plugins"),
     options: Object.assign({}, config()),
   });
@@ -41,7 +38,7 @@ async function build(t) {
   app.decorate("prisma", prisma);
 
   // Setup JWT
-  app.register(require("@fastify/jwt"), {
+  await app.register(require("@fastify/jwt"), {
     secret: config().jwt.secret,
   });
 
@@ -54,6 +51,14 @@ async function build(t) {
       return { success: true };
     },
   });
+
+  // Load your routes
+  await app.register(AutoLoad, {
+    dir: path.join(__dirname, "..", "routes"),
+    options: Object.assign({}, config()),
+  });
+
+  await app.ready();
 
   t.after(async () => {
     await prisma.$disconnect();

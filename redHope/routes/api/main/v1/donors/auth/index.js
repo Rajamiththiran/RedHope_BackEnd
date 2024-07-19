@@ -1,6 +1,7 @@
 "use strict";
 const moment = require("moment");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 module.exports = async function (fastify, opts) {
   fastify.post("/register", {
@@ -18,27 +19,13 @@ module.exports = async function (fastify, opts) {
           "blood_type",
         ],
         properties: {
-          name: {
-            type: "string",
-          },
-          email: {
-            type: "string",
-          },
-          password: {
-            type: "string",
-          },
-          address: {
-            type: "string",
-          },
-          phone_number: {
-            type: "string",
-          },
-          country_code: {
-            type: "string",
-          },
-          blood_type: {
-            type: "string",
-          },
+          name: { type: "string" },
+          email: { type: "string" },
+          password: { type: "string" },
+          address: { type: "string" },
+          phone_number: { type: "string" },
+          country_code: { type: "string" },
+          blood_type: { type: "string" },
         },
       },
     },
@@ -51,11 +38,14 @@ module.exports = async function (fastify, opts) {
         });
 
         if (donor) {
-          throw new Error("The email already Exist!!");
+          throw new Error("The email already exists!");
         }
 
         const salt = await bcrypt.genSalt(10);
         const password = await bcrypt.hash(request.body.password, salt);
+
+        // Generate a simulated FCM token
+        const simulatedFcmToken = generateSimulatedFcmToken();
 
         const donor_user = await fastify.prisma.donors.create({
           data: {
@@ -66,6 +56,7 @@ module.exports = async function (fastify, opts) {
             phone_number: request.body.phone_number,
             country_code: request.body.country_code,
             blood_type: request.body.blood_type,
+            fcm_token: simulatedFcmToken,
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
@@ -79,11 +70,9 @@ module.exports = async function (fastify, opts) {
           role: "Donor",
           email: donor_user.email,
         });
-
         const refreshToken = await fastify.token.create({
           email: donor_user.email,
         });
-
         token.access = accessToken;
         token.refresh = refreshToken;
         newDonor.name = donor_user.name;
@@ -91,6 +80,7 @@ module.exports = async function (fastify, opts) {
         newDonor.phone_number = donor_user.phone_number;
         newDonor.country_code = donor_user.country_code;
         newDonor.blood_type = donor_user.blood_type;
+        newDonor.fcm_token = simulatedFcmToken;
 
         reply.send(newDonor);
       } catch (error) {
@@ -107,12 +97,8 @@ module.exports = async function (fastify, opts) {
       body: {
         required: ["email", "password"],
         properties: {
-          email: {
-            type: "string",
-          },
-          password: {
-            type: "string",
-          },
+          email: { type: "string" },
+          password: { type: "string" },
         },
       },
     },
@@ -123,12 +109,10 @@ module.exports = async function (fastify, opts) {
             email: request.body.email,
           },
         });
+
         if (!donor) {
           throw new Error("Email or Password wrong.");
         }
-        //   if (!user.is_active) {
-        //     throw new Error("This user is not active.");
-        //   }
 
         const validation = await bcrypt.compare(
           request.body.password,
@@ -137,6 +121,7 @@ module.exports = async function (fastify, opts) {
         if (!validation) {
           throw new Error("Email or Password wrong.");
         }
+
         let token = {};
         const accessToken = fastify.jwt.sign({
           id: donor.id,
@@ -146,8 +131,8 @@ module.exports = async function (fastify, opts) {
         const refreshToken = await fastify.token.create({ email: donor.email });
         token.access = accessToken;
         token.refresh = refreshToken;
-        donor.token = token;
 
+        donor.token = token;
         delete donor.password;
         delete donor.is_active;
         delete donor.created_at;
@@ -167,9 +152,7 @@ module.exports = async function (fastify, opts) {
         type: "object",
         required: ["refresh_token"],
         properties: {
-          refresh_token: {
-            type: "string",
-          },
+          refresh_token: { type: "string" },
         },
       },
     },
@@ -183,15 +166,12 @@ module.exports = async function (fastify, opts) {
         if (!donor_token) {
           throw new Error("Invalid refresh token.");
         }
-
         const create_date = moment(donor_token.created_at);
         const now = moment();
-
         const diffInDays = now.diff(create_date, "days");
         if (diffInDays > 30) {
           throw new Error("Refresh token has been expired.");
         }
-
         const donor = await fastify.prisma.donors.findUnique({
           where: {
             email: donor_token.email,
@@ -211,7 +191,6 @@ module.exports = async function (fastify, opts) {
         token.access = accessToken;
         token.refresh = refreshToken;
         donor.token = token;
-
         delete donor.is_active;
         delete donor.created_at;
         reply.send(donor);
@@ -238,8 +217,6 @@ module.exports = async function (fastify, opts) {
     handler: async (request, reply) => {
       try {
         const { donorId, fcmToken } = request.body;
-
-        // First, check if the donor exists
         const donor = await fastify.prisma.donors.findUnique({
           where: { id: donorId },
         });
@@ -251,12 +228,10 @@ module.exports = async function (fastify, opts) {
           });
         }
 
-        // If donor exists, update the FCM token
         await fastify.prisma.donors.update({
           where: { id: donorId },
           data: { fcm_token: fcmToken },
         });
-
         reply.send({ message: "FCM token updated successfully" });
       } catch (error) {
         reply.code(500).send({
@@ -276,9 +251,7 @@ module.exports = async function (fastify, opts) {
         type: "object",
         required: ["refresh_token"],
         properties: {
-          refresh_token: {
-            type: "string",
-          },
+          refresh_token: { type: "string" },
         },
       },
     },
@@ -304,3 +277,8 @@ module.exports = async function (fastify, opts) {
     },
   });
 };
+
+// Function to generate a simulated FCM token
+function generateSimulatedFcmToken() {
+  return `simulated_fcm_token_${crypto.randomBytes(20).toString("hex")}`;
+}

@@ -1,23 +1,53 @@
-# Getting Started with [Fastify-CLI](https://www.npmjs.com/package/fastify-cli)
-This project was bootstrapped with Fastify-CLI.
+# RedHope API
 
-## Available Scripts
+## Setup
 
-In the project directory, you can run:
+1. Setup mysql database locally
+2. Duplicate .env and update the database params
 
-### `npm run dev`
+```
+cp .env.example .env
+```
 
-To start the app in dev mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+3. Install project dependencies
 
-### `npm start`
+```
+yarn install
+```
 
-For production mode
+4. Install db-migrate commands globally
 
-### `npm run test`
+```
+npm install -g db-migrate
+```
 
-Run the test cases.
+5. Run migration
 
-## Learn More
+```
+db-migrate up
+```
 
-To learn Fastify, check out the [Fastify documentation](https://fastify.dev/docs/latest/).
+6. Run the project
+
+```
+yarn run dev
+```
+
+## Swagger
+
+1. URL: http://localhost:3000/docs
+
+## If Created New Migration
+
+1. Execute it
+
+```
+db-migrate up
+```
+
+2. Update prisma
+
+```
+yarn prisma db pull
+yarn prisma generate
+```

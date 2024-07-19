@@ -1,9 +1,9 @@
 "use strict";
-
 const path = require("path");
 const AutoLoad = require("@fastify/autoload");
 const fastifyEnv = require("@fastify/env");
 const fastifyJwt = require("@fastify/jwt");
+const fastifyCors = require("@fastify/cors");
 
 const schema = {
   type: "object",
@@ -64,6 +64,14 @@ module.exports = async function (fastify, opts) {
     // Register JWT plugin
     fastify.register(fastifyJwt, {
       secret: process.env.JWT_SECRET,
+    });
+
+    // Register CORS plugin
+    fastify.register(fastifyCors, {
+      origin: "http://localhost:5173", // Your React app's URL
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
     });
 
     // Register Firebase plugin

@@ -47,7 +47,6 @@ model requests {
   requester_email      String    @db.VarChar(255)
   blood_type_requested String    @db.VarChar(255)
   urgency_level        String?   @db.VarChar(255)
-  request_date         DateTime  @default(now()) @db.Timestamp(0)
   status               String    @default("pending") @db.VarChar(255)
   description          String?   @db.Text
   phone_number         String    @db.VarChar(255)

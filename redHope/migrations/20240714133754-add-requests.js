@@ -23,12 +23,7 @@ exports.up = function (db) {
       type: "string",
       null: true,
     },
-    request_date: {
-      type: "timestamp",
-      timezone: true,
-      notNull: true,
-      defaultValue: new String("CURRENT_TIMESTAMP"),
-    },
+
     status: {
       type: "string",
       notNull: true,

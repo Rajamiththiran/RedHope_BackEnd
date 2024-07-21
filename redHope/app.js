@@ -4,6 +4,7 @@ const AutoLoad = require("@fastify/autoload");
 const fastifyEnv = require("@fastify/env");
 const fastifyJwt = require("@fastify/jwt");
 const fastifyCors = require("@fastify/cors");
+const admin = require("firebase-admin");
 
 const schema = {
   type: "object",
@@ -17,6 +18,9 @@ const schema = {
     "S3_ENDPOINT",
     "SPACE_DIR",
     "JWT_SECRET",
+    "FIREBASE_PROJECT_ID",
+    "FIREBASE_PRIVATE_KEY",
+    "FIREBASE_CLIENT_EMAIL",
   ],
   properties: {
     APP_URL: {
@@ -46,6 +50,15 @@ const schema = {
     JWT_SECRET: {
       type: "string",
     },
+    FIREBASE_PROJECT_ID: {
+      type: "string",
+    },
+    FIREBASE_PRIVATE_KEY: {
+      type: "string",
+    },
+    FIREBASE_CLIENT_EMAIL: {
+      type: "string",
+    },
   },
 };
 
@@ -61,6 +74,18 @@ module.exports = async function (fastify, opts) {
       process.exit(1);
     }
 
+    // Initialize Firebase Admin SDK
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      }),
+    });
+
+    // Make admin available through fastify instance
+    fastify.decorate("firebase", admin);
+
     // Register JWT plugin
     fastify.register(fastifyJwt, {
       secret: process.env.JWT_SECRET,
@@ -73,9 +98,6 @@ module.exports = async function (fastify, opts) {
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     });
-
-    // Register Firebase plugin
-    fastify.register(require("./plugins/firebase"));
 
     // This loads all plugins defined in plugins
     fastify.register(AutoLoad, {

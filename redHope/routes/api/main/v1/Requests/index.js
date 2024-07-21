@@ -1,21 +1,6 @@
 "use strict";
 const moment = require("moment");
 
-async function findMatchingDonors(fastify, request) {
-  return await fastify.prisma.donors.findMany({
-    where: {
-      blood_type: request.blood_type_requested,
-      // Add any other criteria for matching donors
-    },
-  });
-}
-
-async function sendNotificationsToMatchingDonors(fastify, donors, request) {
-  // Placeholder for notification logic
-  // You'll need to implement this based on your notification service
-  console.log(`Sending notifications to ${donors.length} matching donors`);
-}
-
 module.exports = async function (fastify, opts) {
   fastify.post("/create", {
     schema: {
@@ -63,12 +48,37 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        const matchingDonors = await findMatchingDonors(fastify, newRequest);
-        await sendNotificationsToMatchingDonors(
-          fastify,
-          matchingDonors,
-          newRequest
-        );
+        const matchingDonors = await fastify.prisma.donors.findMany({
+          where: {
+            blood_type: request.body.blood_type_requested,
+          },
+          select: {
+            fcm_token: true,
+          },
+        });
+
+        const fcmTokens = matchingDonors
+          .map((donor) => donor.fcm_token)
+          .filter(Boolean);
+
+        if (fcmTokens.length > 0) {
+          const message = {
+            notification: {
+              title: "Urgent Blood Request",
+              body: `A request for ${request.body.blood_type_requested} blood type has been made in your area.`,
+            },
+            tokens: fcmTokens,
+          };
+
+          try {
+            const response = await fastify.firebase
+              .messaging()
+              .sendMulticast(message);
+            console.log("Successfully sent messages:", response.successCount);
+          } catch (error) {
+            console.log("Error sending messages:", error);
+          }
+        }
 
         reply.code(201).send({
           message: "Blood request created successfully and notifications sent",
@@ -77,6 +87,48 @@ module.exports = async function (fastify, opts) {
       } catch (error) {
         reply.code(500).send({
           message: "Error processing blood request",
+          error: error.message,
+        });
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    },
+  });
+
+  fastify.get("/", {
+    schema: {
+      tags: ["Main"],
+      querystring: {
+        type: "object",
+        properties: {
+          blood_type: { type: "string" },
+          urgency_level: { type: "string" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { blood_type, urgency_level } = request.query;
+
+        let whereClause = {};
+        if (blood_type) {
+          whereClause.blood_type_requested = blood_type;
+        }
+        if (urgency_level) {
+          whereClause.urgency_level = urgency_level;
+        }
+
+        const requests = await fastify.prisma.requests.findMany({
+          where: whereClause,
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+
+        reply.send(requests);
+      } catch (error) {
+        reply.code(500).send({
+          message: "Error fetching blood requests",
           error: error.message,
         });
       } finally {

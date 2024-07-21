@@ -1,7 +1,6 @@
 "use strict";
 const moment = require("moment");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
 
 module.exports = async function (fastify, opts) {
   fastify.post("/register", {
@@ -17,6 +16,7 @@ module.exports = async function (fastify, opts) {
           "phone_number",
           "country_code",
           "blood_type",
+          "fcm_token", // Add this line
         ],
         properties: {
           name: { type: "string" },
@@ -26,6 +26,7 @@ module.exports = async function (fastify, opts) {
           phone_number: { type: "string" },
           country_code: { type: "string" },
           blood_type: { type: "string" },
+          fcm_token: { type: "string" }, // Add this line
         },
       },
     },
@@ -36,16 +37,11 @@ module.exports = async function (fastify, opts) {
             email: request.body.email,
           },
         });
-
         if (donor) {
           throw new Error("The email already exists!");
         }
-
         const salt = await bcrypt.genSalt(10);
         const password = await bcrypt.hash(request.body.password, salt);
-
-        // Generate a simulated FCM token
-        const simulatedFcmToken = generateSimulatedFcmToken();
 
         const donor_user = await fastify.prisma.donors.create({
           data: {
@@ -56,7 +52,7 @@ module.exports = async function (fastify, opts) {
             phone_number: request.body.phone_number,
             country_code: request.body.country_code,
             blood_type: request.body.blood_type,
-            fcm_token: simulatedFcmToken,
+            fcm_token: request.body.fcm_token, // Add this line
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
@@ -64,7 +60,6 @@ module.exports = async function (fastify, opts) {
 
         let token = {};
         let newDonor = {};
-
         const accessToken = fastify.jwt.sign({
           id: donor_user.id,
           role: "Donor",
@@ -80,8 +75,7 @@ module.exports = async function (fastify, opts) {
         newDonor.phone_number = donor_user.phone_number;
         newDonor.country_code = donor_user.country_code;
         newDonor.blood_type = donor_user.blood_type;
-        newDonor.fcm_token = simulatedFcmToken;
-
+        newDonor.fcm_token = donor_user.fcm_token; // Add this line
         reply.send(newDonor);
       } catch (error) {
         reply.send(error);
@@ -109,11 +103,9 @@ module.exports = async function (fastify, opts) {
             email: request.body.email,
           },
         });
-
         if (!donor) {
           throw new Error("Email or Password wrong.");
         }
-
         const validation = await bcrypt.compare(
           request.body.password,
           donor.password
@@ -121,7 +113,6 @@ module.exports = async function (fastify, opts) {
         if (!validation) {
           throw new Error("Email or Password wrong.");
         }
-
         let token = {};
         const accessToken = fastify.jwt.sign({
           id: donor.id,
@@ -131,7 +122,6 @@ module.exports = async function (fastify, opts) {
         const refreshToken = await fastify.token.create({ email: donor.email });
         token.access = accessToken;
         token.refresh = refreshToken;
-
         donor.token = token;
         delete donor.password;
         delete donor.is_active;
@@ -220,14 +210,12 @@ module.exports = async function (fastify, opts) {
         const donor = await fastify.prisma.donors.findUnique({
           where: { id: donorId },
         });
-
         if (!donor) {
           return reply.code(404).send({
             message: "Donor not found",
             error: `No donor found with id ${donorId}`,
           });
         }
-
         await fastify.prisma.donors.update({
           where: { id: donorId },
           data: { fcm_token: fcmToken },
@@ -277,8 +265,3 @@ module.exports = async function (fastify, opts) {
     },
   });
 };
-
-// Function to generate a simulated FCM token
-function generateSimulatedFcmToken() {
-  return `simulated_fcm_token_${crypto.randomBytes(20).toString("hex")}`;
-}

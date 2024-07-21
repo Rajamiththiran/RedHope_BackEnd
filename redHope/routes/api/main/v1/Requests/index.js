@@ -89,13 +89,11 @@ module.exports = async function (fastify, opts) {
           message: "Error processing blood request",
           error: error.message,
         });
-      } finally {
-        await fastify.prisma.$disconnect();
       }
     },
   });
 
-  fastify.get("/", {
+  fastify.get("/notification", {
     schema: {
       tags: ["Main"],
       querystring: {

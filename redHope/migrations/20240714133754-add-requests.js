@@ -19,6 +19,10 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    nic_number: {
+      type: "string",
+      notNull: true,
+    },
     urgency_level: {
       type: "string",
       null: true,

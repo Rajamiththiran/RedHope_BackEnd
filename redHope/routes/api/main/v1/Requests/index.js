@@ -65,19 +65,8 @@ module.exports = async function (fastify, opts) {
               body: `A request for ${request.body.blood_type_requested} blood type has been made in your area.`,
             },
             data: {
-              url: "/donor_dashboard",
-            },
-            webpush: {
-              fcm_options: {
-                link: "/donor_dashboard",
-              },
-              headers: {
-                Urgency: "high",
-              },
-              notification: {
-                icon: "/path-to-your-icon.png",
-                click_action: "/donor_dashboard",
-              },
+              url: "/donor-dashboard",
+              requestId: newRequest.id.toString(),
             },
             tokens: fcmTokens,
           };

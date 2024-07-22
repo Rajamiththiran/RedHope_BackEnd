@@ -19,16 +19,15 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    nic_number: {
+      type: "string",
+      notNull: true,
+    },
     urgency_level: {
       type: "string",
       null: true,
     },
-    request_date: {
-      type: "timestamp",
-      timezone: true,
-      notNull: true,
-      defaultValue: new String("CURRENT_TIMESTAMP"),
-    },
+
     status: {
       type: "string",
       notNull: true,

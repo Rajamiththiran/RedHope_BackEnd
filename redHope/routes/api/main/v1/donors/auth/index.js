@@ -89,9 +89,10 @@ module.exports = async function (fastify, opts) {
     schema: {
       tags: ["Main"],
       body: {
+        type: "object",
         required: ["email", "password"],
         properties: {
-          email: { type: "string" },
+          email: { type: "string", format: "email" },
           password: { type: "string" },
         },
       },
@@ -99,38 +100,36 @@ module.exports = async function (fastify, opts) {
     handler: async (request, reply) => {
       try {
         const donor = await fastify.prisma.donors.findUnique({
-          where: {
-            email: request.body.email,
-          },
+          where: { email: request.body.email },
         });
+
         if (!donor) {
-          throw new Error("Email or Password wrong.");
+          throw new Error("Invalid email or password");
         }
-        const validation = await bcrypt.compare(
+
+        const validPassword = await bcrypt.compare(
           request.body.password,
           donor.password
         );
-        if (!validation) {
-          throw new Error("Email or Password wrong.");
+        if (!validPassword) {
+          throw new Error("Invalid email or password");
         }
-        let token = {};
-        const accessToken = fastify.jwt.sign({
+
+        const token = fastify.jwt.sign({
           id: donor.id,
-          role: "Donor",
           email: donor.email,
+          role: "donor",
         });
-        const refreshToken = await fastify.token.create({ email: donor.email });
-        token.access = accessToken;
-        token.refresh = refreshToken;
-        donor.token = token;
-        delete donor.password;
-        delete donor.is_active;
-        delete donor.created_at;
-        reply.send(donor);
+
+        reply.send({
+          id: donor.id,
+          name: donor.name,
+          email: donor.email,
+          blood_type: donor.blood_type,
+          token: token,
+        });
       } catch (error) {
-        reply.send(error);
-      } finally {
-        await fastify.prisma.$disconnect();
+        reply.code(400).send({ error: error.message });
       }
     },
   });

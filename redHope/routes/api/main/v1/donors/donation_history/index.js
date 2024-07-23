@@ -6,13 +6,13 @@ module.exports = async function (fastify, opts) {
   // Create a new donation history record
   fastify.post("/create", {
     schema: {
-      tags: ["Donation History"],
+      tags: ["Main"],
       body: {
         type: "object",
         required: ["donor_id", "donation_date", "address", "blood_type"],
         properties: {
           donor_id: { type: "integer" },
-          donation_date: { type: "string" },
+          donation_date: { type: "string", format: "date-time" },
           address: { type: "string" },
           blood_type: { type: "string" },
           volume: { type: "number" },
@@ -23,6 +23,7 @@ module.exports = async function (fastify, opts) {
     },
     handler: async (request, reply) => {
       try {
+        console.log("Received donation data:", request.body);
         const donation = await fastify.prisma.donation_history.create({
           data: {
             ...request.body,
@@ -30,9 +31,14 @@ module.exports = async function (fastify, opts) {
             modified_at: moment().toISOString(),
           },
         });
+        console.log("Donation created successfully:", donation);
         reply.code(201).send(donation);
       } catch (error) {
-        reply.code(500).send({ error: "Failed to create donation history" });
+        console.error("Error creating donation history:", error);
+        reply.code(500).send({
+          error: "Failed to create donation history",
+          details: error.message,
+        });
       }
     },
   });
@@ -40,7 +46,7 @@ module.exports = async function (fastify, opts) {
   // Read all donation history records for a donor
   fastify.get("/donor/:donorId", {
     schema: {
-      tags: ["Donation History"],
+      tags: ["Main"],
       params: {
         type: "object",
         required: ["donorId"],
@@ -69,7 +75,7 @@ module.exports = async function (fastify, opts) {
   // Read a specific donation history record
   fastify.get("/:id", {
     schema: {
-      tags: ["Donation History"],
+      tags: ["Main"],
       params: {
         type: "object",
         required: ["id"],
@@ -99,7 +105,7 @@ module.exports = async function (fastify, opts) {
   // Update a donation history record
   fastify.put("/:id", {
     schema: {
-      tags: ["Donation History"],
+      tags: ["Main"],
       params: {
         type: "object",
         required: ["id"],
@@ -140,7 +146,7 @@ module.exports = async function (fastify, opts) {
   // Delete a donation history record
   fastify.delete("/:id", {
     schema: {
-      tags: ["Donation History"],
+      tags: ["Main"],
       params: {
         type: "object",
         required: ["id"],

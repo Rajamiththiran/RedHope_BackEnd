@@ -68,7 +68,10 @@ module.exports = async function (fastify, opts) {
 
     // Register CORS plugin
     fastify.register(fastifyCors, {
-      origin: "http://localhost:5173", // Your React app's URL
+      origin: [
+        "http://localhost:5173",
+        "https://red-hope-front-end.vercel.app",
+      ], // Your React app's URL
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,

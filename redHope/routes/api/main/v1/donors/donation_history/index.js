@@ -123,7 +123,7 @@ module.exports = async function (fastify, opts) {
           "donation_type",
         ],
         properties: {
-          donation_date: { type: "string", format: "date-time" },
+          donation_date: { type: "string", format: "date" },
           address: { type: "string" },
           blood_type: { type: "string" },
           volume: { type: "number" },

@@ -115,8 +115,15 @@ module.exports = async function (fastify, opts) {
       },
       body: {
         type: "object",
+        required: [
+          "donation_date",
+          "address",
+          "blood_type",
+          "volume",
+          "donation_type",
+        ],
         properties: {
-          donation_date: { type: "string", format: "date" },
+          donation_date: { type: "string", format: "date-time" },
           address: { type: "string" },
           blood_type: { type: "string" },
           volume: { type: "number" },
@@ -127,18 +134,46 @@ module.exports = async function (fastify, opts) {
     },
     handler: async (request, reply) => {
       try {
+        const id = parseInt(request.params.id, 10);
+        if (isNaN(id)) {
+          return reply.code(400).send({ error: "Invalid ID" });
+        }
+
+        if (!moment(request.body.donation_date, "YYYY-MM-DD", true).isValid()) {
+          return reply
+            .code(400)
+            .send({ error: "Invalid date format. Use YYYY-MM-DD" });
+        }
+
+        const existingDonation =
+          await fastify.prisma.donation_history.findUnique({
+            where: { id: id },
+          });
+
+        if (!existingDonation) {
+          return reply.code(404).send({ error: "Donation history not found" });
+        }
+
         const updatedDonation = await fastify.prisma.donation_history.update({
-          where: {
-            id: parseInt(request.params.id),
-          },
+          where: { id: id },
           data: {
-            ...request.body,
-            modified_at: moment().toISOString(),
+            donation_date: new Date(request.body.donation_date),
+            address: request.body.address,
+            blood_type: request.body.blood_type,
+            volume: parseFloat(request.body.volume),
+            donation_type: request.body.donation_type,
+            description: request.body.description,
+            modified_at: new Date(),
           },
         });
+
         reply.send(updatedDonation);
       } catch (error) {
-        reply.code(500).send({ error: "Failed to update donation history" });
+        console.error("Error updating donation history:", error);
+        reply.code(500).send({
+          error: "Failed to update donation history",
+          details: error.message,
+        });
       }
     },
   });

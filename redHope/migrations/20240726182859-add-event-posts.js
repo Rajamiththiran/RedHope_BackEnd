@@ -42,11 +42,11 @@ exports.up = function (db) {
       notNull: true,
     },
     start_time: {
-      type: "timestamp",
+      type: "date",
       notNull: true,
     },
     end_time: {
-      type: "timestamp",
+      type: "date",
       notNull: true,
     },
     location: {

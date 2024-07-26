@@ -82,3 +82,19 @@ model donation_history {
 
   @@index([donor_id], map: "donation_history_donor_id_fk")
 }
+
+model events {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  donor_id    Int       @db.UnsignedInt
+  title       String    @db.VarChar(255)
+  start_time  DateTime  @db.Date
+  address     String    @db.Text
+  color       String?   @db.VarChar(255)
+  reminder    DateTime? @db.Date
+  description String?   @db.Text
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  modified_at DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at  DateTime? @db.Timestamp(0)
+
+  @@index([donor_id], map: "events_donor_id_fk")
+}

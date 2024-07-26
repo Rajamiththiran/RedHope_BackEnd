@@ -38,4 +38,31 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.get("/:id", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "integer" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const event = await fastify.prisma.events.findUnique({
+          where: { id: parseInt(request.params.id) },
+        });
+        if (!event) {
+          reply.code(404).send({ error: "Event not found" });
+        } else {
+          reply.send(event);
+        }
+      } catch (error) {
+        reply.code(500).send({ error: "Failed to fetch event" });
+      }
+    },
+  });
 };

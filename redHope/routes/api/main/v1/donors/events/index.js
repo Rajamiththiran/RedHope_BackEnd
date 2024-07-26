@@ -12,6 +12,7 @@ module.exports = async function (fastify, opts) {
           donor_id: { type: "integer" },
           title: { type: "string" },
           start_time: { type: "string", format: "date-time" },
+          end_time: { type: "string", format: "date-time" },
           address: { type: "string" },
           color: { type: "string" },
           reminder: { type: "string", format: "date-time" },

@@ -45,7 +45,7 @@ exports.up = function (db) {
       type: "date",
       notNull: true,
     },
-    start_time: {
+    end_time: {
       type: "date",
       notNull: true,
     },

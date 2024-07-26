@@ -15,7 +15,7 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db) {
-  return db.createTable("thoughts", {
+  return db.createTable("knowledges", {
     id: {
       type: "int",
       unsigned: true,
@@ -23,13 +23,13 @@ exports.up = function (db) {
       primaryKey: true,
       autoIncrement: true,
     },
-    donor_id: {
+    hospital_id: {
       type: "int",
       unsigned: true,
       notNull: true,
       foreignKey: {
-        name: "thoughts_donor_id_fk",
-        table: "donors",
+        name: "knowledges_hospital_id_fk",
+        table: "hospitals",
         mapping: "id",
         rules: {
           onDelete: "CASCADE",
@@ -37,13 +37,13 @@ exports.up = function (db) {
         },
       },
     },
-    title: {
-      type: "string",
-      notNull: true,
-    },
-    thought: {
+    knowledge: {
       type: "text",
       notNull: true,
+    },
+    image_url: {
+      type: "string",
+      null: true,
     },
     created_at: {
       type: "timestamp",
@@ -66,7 +66,7 @@ exports.up = function (db) {
 };
 
 exports.down = function (db) {
-  return db.dropTable("thoughts");
+  return db.dropTable("knowledges");
 };
 
 exports._meta = {

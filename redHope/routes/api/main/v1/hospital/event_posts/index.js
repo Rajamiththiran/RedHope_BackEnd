@@ -69,4 +69,44 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.put("/:id", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "integer" },
+        },
+      },
+      body: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          start_time: { type: "string", format: "date-time" },
+          end_time: { type: "string", format: "date-time" },
+          location: { type: "string" },
+          description: { type: "string" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const updatedEventPost = await fastify.prisma.event_posts.update({
+          where: { id: parseInt(request.params.id) },
+          data: {
+            ...request.body,
+            modified_at: moment().toISOString(),
+          },
+        });
+        reply.send(updatedEventPost);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to update event post",
+          details: error.message,
+        });
+      }
+    },
+  });
 };

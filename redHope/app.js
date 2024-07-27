@@ -10,30 +10,40 @@ const schema = {
   required: [
     "APP_URL",
     "DATABASE_URL",
-    "BUCKET_NAME",
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
-    "AWS_REGION",
     "S3_ENDPOINT",
+    "AWS_REGION",
     "SPACE_DIR",
     "JWT_SECRET",
+    "FIREBASE_PROJECT_ID",
+    "FIREBASE_PRIVATE_KEY",
+    "FIREBASE_CLIENT_EMAIL",
     "SUPABASE_URL",
     "SUPABASE_KEY",
+    "BUCKET_NAME",
   ],
   properties: {
     APP_URL: { type: "string" },
     DATABASE_URL: { type: "string" },
-    BUCKET_NAME: { type: "string" },
     AWS_ACCESS_KEY_ID: { type: "string" },
     AWS_SECRET_ACCESS_KEY: { type: "string" },
-    AWS_REGION: { type: "string" },
     S3_ENDPOINT: { type: "string" },
+    AWS_REGION: { type: "string" },
     SPACE_DIR: { type: "string" },
     JWT_SECRET: { type: "string" },
+    FIREBASE_PROJECT_ID: { type: "string" },
+    FIREBASE_PRIVATE_KEY: { type: "string" },
+    FIREBASE_CLIENT_EMAIL: { type: "string" },
     SUPABASE_URL: { type: "string" },
     SUPABASE_KEY: { type: "string" },
+    BUCKET_NAME: { type: "string" },
   },
 };
+
+console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY ? "Set" : "Not set");
+console.log("BUCKET_NAME:", process.env.BUCKET_NAME);
 
 const options = {
   schema: schema,

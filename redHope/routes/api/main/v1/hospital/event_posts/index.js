@@ -7,50 +7,79 @@ module.exports = async function (fastify, opts) {
     schema: {
       tags: ["Main"],
       consumes: ["multipart/form-data"],
-      body: {
-        type: "object",
-        properties: {
-          hospital_id: { type: "integer" },
-          title: { type: "string" },
-          start_time: { type: "string", format: "date-time" },
-          end_time: { type: "string", format: "date-time" },
-          location: { type: "string" },
-          description: { type: "string" },
-          image: { type: "string", format: "binary" },
-        },
-      },
     },
     handler: async (request, reply) => {
-      const data = await request.file();
-      const {
-        hospital_id,
-        title,
-        start_time,
-        end_time,
-        location,
-        description,
-      } = request.body;
-      let image_url = null;
+      console.log("Handler started");
 
-      if (data) {
-        image_url = await fastify.uploadImage(data);
+      try {
+        console.log("Parsing parts");
+        const parts = request.parts();
+
+        const fields = {};
+        let imageFile;
+
+        console.log("Iterating over parts");
+        for await (const part of parts) {
+          console.log("Processing part:", part.fieldname);
+          if (part.type === "file") {
+            if (
+              part.mimetype === "image/jpeg" ||
+              part.mimetype === "image/png"
+            ) {
+              imageFile = part;
+              console.log(
+                "File received:",
+                imageFile.filename,
+                "Mimetype:",
+                imageFile.mimetype
+              );
+            } else {
+              throw new Error(
+                "Invalid file type. Only JPEG and PNG are allowed."
+              );
+            }
+          } else {
+            fields[part.fieldname] = part.value;
+          }
+        }
+
+        console.log("Parsed fields:", fields);
+
+        let image_url = null;
+        if (imageFile) {
+          console.log("Uploading image");
+          try {
+            image_url = await fastify.uploadImage(imageFile);
+            console.log("Image uploaded successfully. URL:", image_url);
+          } catch (uploadError) {
+            console.error("Error uploading image:", uploadError);
+            throw uploadError;
+          }
+        }
+
+        console.log("Creating event post");
+        const newEventPost = await fastify.prisma.event_posts.create({
+          data: {
+            hospital_id: parseInt(fields.hospital_id),
+            title: fields.title,
+            start_time: new Date(fields.start_time),
+            end_time: new Date(fields.end_time),
+            location: fields.location,
+            description: fields.description,
+            image_url,
+            created_at: moment().toISOString(),
+            modified_at: moment().toISOString(),
+          },
+        });
+
+        console.log("Event post created:", newEventPost);
+
+        console.log("Sending response");
+        reply.code(201).send(newEventPost);
+      } catch (error) {
+        console.error("Error in handler:", error);
+        reply.code(500).send({ error: error.message });
       }
-
-      const newEventPost = await fastify.prisma.event_posts.create({
-        data: {
-          hospital_id: parseInt(hospital_id),
-          title,
-          start_time: new Date(start_time),
-          end_time: new Date(end_time),
-          location,
-          description,
-          image_url,
-          created_at: moment().toISOString(),
-          modified_at: moment().toISOString(),
-        },
-      });
-
-      reply.code(201).send(newEventPost);
     },
   });
 
@@ -116,28 +145,29 @@ module.exports = async function (fastify, opts) {
           id: { type: "integer" },
         },
       },
-      body: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          start_time: { type: "string", format: "date-time" },
-          end_time: { type: "string", format: "date-time" },
-          location: { type: "string" },
-          description: { type: "string" },
-          image: { type: "string", format: "binary" },
-        },
-      },
     },
     handler: async (request, reply) => {
       const { id } = request.params;
-      const { title, start_time, end_time, location, description } =
-        request.body;
-      let image_url = null;
 
-      const data = await request.file();
-      if (data) {
-        image_url = await fastify.uploadImage(data);
+      const parts = request.parts();
+
+      const fields = {};
+      let imageFile;
+
+      for await (const part of parts) {
+        if (part.type === "file") {
+          imageFile = part;
+        } else {
+          fields[part.fieldname] = part.value;
+        }
       }
+
+      let image_url = null;
+      if (imageFile) {
+        image_url = await fastify.uploadImage(imageFile);
+      }
+
+      const { title, start_time, end_time, location, description } = fields;
 
       const updatedEventPost = await fastify.prisma.event_posts.update({
         where: { id: parseInt(id) },

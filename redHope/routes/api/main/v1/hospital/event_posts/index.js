@@ -1,84 +1,44 @@
 "use strict";
-
 const moment = require("moment");
 
 module.exports = async function (fastify, opts) {
   fastify.post("/create", {
     schema: {
       tags: ["Main"],
-      consumes: ["multipart/form-data"],
+      body: {
+        type: "object",
+        required: [
+          "hospital_id",
+          "title",
+          "start_time",
+          "end_time",
+          "location",
+        ],
+        properties: {
+          hospital_id: { type: "integer" },
+          title: { type: "string" },
+          start_time: { type: "string", format: "date-time" },
+          end_time: { type: "string", format: "date-time" },
+          location: { type: "string" },
+          description: { type: "string" },
+        },
+      },
     },
     handler: async (request, reply) => {
-      console.log("Handler started");
-
       try {
-        console.log("Parsing parts");
-        const parts = request.parts();
-
-        const fields = {};
-        let imageFile;
-
-        console.log("Iterating over parts");
-        for await (const part of parts) {
-          console.log("Processing part:", part.fieldname);
-          if (part.type === "file") {
-            if (
-              part.mimetype === "image/jpeg" ||
-              part.mimetype === "image/png"
-            ) {
-              imageFile = part;
-              console.log(
-                "File received:",
-                imageFile.filename,
-                "Mimetype:",
-                imageFile.mimetype
-              );
-            } else {
-              throw new Error(
-                "Invalid file type. Only JPEG and PNG are allowed."
-              );
-            }
-          } else {
-            fields[part.fieldname] = part.value;
-          }
-        }
-
-        console.log("Parsed fields:", fields);
-
-        let image_url = null;
-        if (imageFile) {
-          console.log("Uploading image");
-          try {
-            image_url = await fastify.uploadImage(imageFile);
-            console.log("Image uploaded successfully. URL:", image_url);
-          } catch (uploadError) {
-            console.error("Error uploading image:", uploadError);
-            throw uploadError;
-          }
-        }
-
-        console.log("Creating event post");
-        const newEventPost = await fastify.prisma.event_posts.create({
+        const eventPost = await fastify.prisma.event_posts.create({
           data: {
-            hospital_id: parseInt(fields.hospital_id),
-            title: fields.title,
-            start_time: new Date(fields.start_time),
-            end_time: new Date(fields.end_time),
-            location: fields.location,
-            description: fields.description,
-            image_url,
+            ...request.body,
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
         });
-
-        console.log("Event post created:", newEventPost);
-
-        console.log("Sending response");
-        reply.code(201).send(newEventPost);
+        reply.code(201).send(eventPost);
       } catch (error) {
-        console.error("Error in handler:", error);
-        reply.code(500).send({ error: error.message });
+        reply.code(500).send({
+          error: "Failed to create event post",
+          details: error.message,
+        });
       }
     },
   });
@@ -95,49 +55,24 @@ module.exports = async function (fastify, opts) {
       },
     },
     handler: async (request, reply) => {
-      const { id } = request.params;
-      const eventPost = await fastify.prisma.event_posts.findUnique({
-        where: { id: parseInt(id) },
-      });
-
-      if (!eventPost) {
-        reply.code(404).send({ error: "Event post not found" });
-      } else {
-        reply.send(eventPost);
+      try {
+        const eventPost = await fastify.prisma.event_posts.findUnique({
+          where: { id: parseInt(request.params.id) },
+        });
+        if (!eventPost) {
+          reply.code(404).send({ error: "Event post not found" });
+        } else {
+          reply.send(eventPost);
+        }
+      } catch (error) {
+        reply.code(500).send({ error: "Failed to fetch event post" });
       }
-    },
-  });
-
-  fastify.get("/browse", {
-    schema: {
-      tags: ["Main"],
-      querystring: {
-        type: "object",
-        properties: {
-          hospital_id: { type: "integer" },
-          limit: { type: "integer", default: 10 },
-          offset: { type: "integer", default: 0 },
-        },
-      },
-    },
-    handler: async (request, reply) => {
-      const { hospital_id, limit = 10, offset = 0 } = request.query;
-
-      const eventPosts = await fastify.prisma.event_posts.findMany({
-        where: hospital_id ? { hospital_id: parseInt(hospital_id) } : {},
-        take: parseInt(limit),
-        skip: parseInt(offset),
-        orderBy: { start_time: "asc" },
-      });
-
-      reply.send(eventPosts);
     },
   });
 
   fastify.put("/:id", {
     schema: {
       tags: ["Main"],
-      consumes: ["multipart/form-data"],
       params: {
         type: "object",
         required: ["id"],
@@ -145,44 +80,33 @@ module.exports = async function (fastify, opts) {
           id: { type: "integer" },
         },
       },
+      body: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          start_time: { type: "string", format: "date-time" },
+          end_time: { type: "string", format: "date-time" },
+          location: { type: "string" },
+          description: { type: "string" },
+        },
+      },
     },
     handler: async (request, reply) => {
-      const { id } = request.params;
-
-      const parts = request.parts();
-
-      const fields = {};
-      let imageFile;
-
-      for await (const part of parts) {
-        if (part.type === "file") {
-          imageFile = part;
-        } else {
-          fields[part.fieldname] = part.value;
-        }
+      try {
+        const updatedEventPost = await fastify.prisma.event_posts.update({
+          where: { id: parseInt(request.params.id) },
+          data: {
+            ...request.body,
+            modified_at: moment().toISOString(),
+          },
+        });
+        reply.send(updatedEventPost);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to update event post",
+          details: error.message,
+        });
       }
-
-      let image_url = null;
-      if (imageFile) {
-        image_url = await fastify.uploadImage(imageFile);
-      }
-
-      const { title, start_time, end_time, location, description } = fields;
-
-      const updatedEventPost = await fastify.prisma.event_posts.update({
-        where: { id: parseInt(id) },
-        data: {
-          title,
-          start_time: start_time ? new Date(start_time) : undefined,
-          end_time: end_time ? new Date(end_time) : undefined,
-          location,
-          description,
-          image_url: image_url || undefined,
-          modified_at: moment().toISOString(),
-        },
-      });
-
-      reply.send(updatedEventPost);
     },
   });
 
@@ -198,11 +122,63 @@ module.exports = async function (fastify, opts) {
       },
     },
     handler: async (request, reply) => {
-      const { id } = request.params;
-      await fastify.prisma.event_posts.delete({
-        where: { id: parseInt(id) },
-      });
-      reply.code(204).send();
+      try {
+        await fastify.prisma.event_posts.delete({
+          where: { id: parseInt(request.params.id) },
+        });
+        reply.code(204).send();
+      } catch (error) {
+        reply.code(500).send({ error: "Failed to delete event post" });
+      }
+    },
+  });
+
+  fastify.get("/browse/:hospitalId", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["hospitalId"],
+        properties: {
+          hospitalId: { type: "integer" },
+        },
+      },
+      querystring: {
+        type: "object",
+        properties: {
+          start_date: { type: "string", format: "date" },
+          end_date: { type: "string", format: "date" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { hospitalId } = request.params;
+        const { start_date, end_date } = request.query;
+        let whereClause = {
+          hospital_id: parseInt(hospitalId),
+        };
+
+        if (start_date && end_date) {
+          whereClause.start_time = {
+            gte: new Date(start_date),
+            lte: new Date(end_date),
+          };
+        }
+
+        const eventPosts = await fastify.prisma.event_posts.findMany({
+          where: whereClause,
+          orderBy: {
+            start_time: "asc",
+          },
+        });
+        reply.send(eventPosts);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch event posts",
+          details: error.message,
+        });
+      }
     },
   });
 };

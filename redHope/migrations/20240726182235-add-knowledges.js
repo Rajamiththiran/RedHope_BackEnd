@@ -41,10 +41,7 @@ exports.up = function (db) {
       type: "text",
       notNull: true,
     },
-    image_url: {
-      type: "string",
-      null: true,
-    },
+
     created_at: {
       type: "timestamp",
       timezone: true,

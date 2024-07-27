@@ -132,4 +132,53 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.get("/browse/:hospitalId", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["hospitalId"],
+        properties: {
+          hospitalId: { type: "integer" },
+        },
+      },
+      querystring: {
+        type: "object",
+        properties: {
+          start_date: { type: "string", format: "date" },
+          end_date: { type: "string", format: "date" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { hospitalId } = request.params;
+        const { start_date, end_date } = request.query;
+        let whereClause = {
+          hospital_id: parseInt(hospitalId),
+        };
+
+        if (start_date && end_date) {
+          whereClause.start_time = {
+            gte: new Date(start_date),
+            lte: new Date(end_date),
+          };
+        }
+
+        const eventPosts = await fastify.prisma.event_posts.findMany({
+          where: whereClause,
+          orderBy: {
+            start_time: "asc",
+          },
+        });
+        reply.send(eventPosts);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch event posts",
+          details: error.message,
+        });
+      }
+    },
+  });
 };

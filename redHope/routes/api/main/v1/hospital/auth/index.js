@@ -156,6 +156,7 @@ module.exports = async function (fastify, opts) {
 
         token.access = accessToken;
         token.refresh = refreshToken;
+        hospital_user.id = hospitals.id;
         hospital_user.token = token;
         hospital_user.name = hospitals.name;
         hospital_user.phone_number = hospitals.phone_number;

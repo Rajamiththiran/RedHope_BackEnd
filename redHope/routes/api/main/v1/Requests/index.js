@@ -97,6 +97,51 @@ module.exports = async function (fastify, opts) {
     },
   });
 
+  // Add this new route to get all requests
+  fastify.get("/all", {
+    schema: {
+      tags: ["Main"],
+      querystring: {
+        start_date: { type: "string", format: "date" },
+        end_date: { type: "string", format: "date" },
+        blood_type: { type: "string" },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { start_date, end_date, blood_type } = request.query;
+        let whereClause = {};
+
+        if (start_date && end_date) {
+          whereClause.created_at = {
+            gte: new Date(start_date),
+            lte: new Date(end_date),
+          };
+        }
+
+        if (blood_type) {
+          whereClause.blood_type_requested = blood_type;
+        }
+
+        const requests = await fastify.prisma.requests.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            created_at: true,
+            blood_type_requested: true,
+          },
+          orderBy: {
+            created_at: "asc",
+          },
+        });
+
+        reply.send(requests);
+      } catch (error) {
+        reply.code(500).send({ error: "Failed to fetch requests" });
+      }
+    },
+  });
+
   fastify.get("/notification", {
     schema: {
       tags: ["Main"],

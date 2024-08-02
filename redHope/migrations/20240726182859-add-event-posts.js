@@ -49,6 +49,10 @@ exports.up = function (db) {
       type: "date",
       notNull: true,
     },
+    hospital_name: {
+      type: "string",
+      notNull: true,
+    },
     location: {
       type: "string",
       notNull: true,

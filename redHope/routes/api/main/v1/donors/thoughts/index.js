@@ -33,4 +33,25 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.get("/all", {
+    schema: {
+      tags: ["Main"],
+    },
+    handler: async (request, reply) => {
+      try {
+        const thoughts = await fastify.prisma.thoughts.findMany({
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+        reply.send(thoughts);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch all thoughts",
+          details: error.message,
+        });
+      }
+    },
+  });
 };

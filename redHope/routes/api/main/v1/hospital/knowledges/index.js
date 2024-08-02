@@ -32,4 +32,52 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.get("/all", {
+    schema: {
+      tags: ["Main"],
+    },
+    handler: async (request, reply) => {
+      try {
+        const knowledges = await fastify.prisma.knowledges.findMany({
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+        reply.send(knowledges);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch all knowledges",
+          details: error.message,
+        });
+      }
+    },
+  });
+
+  fastify.get("/:id", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "integer" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const knowledge = await fastify.prisma.knowledges.findUnique({
+          where: { id: parseInt(request.params.id) },
+        });
+        if (!knowledge) {
+          reply.code(404).send({ error: "Knowledge not found" });
+        } else {
+          reply.send(knowledge);
+        }
+      } catch (error) {
+        reply.code(500).send({ error: "Failed to fetch knowledge" });
+      }
+    },
+  });
 };

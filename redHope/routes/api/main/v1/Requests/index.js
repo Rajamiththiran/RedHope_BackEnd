@@ -119,6 +119,46 @@ module.exports = async function (fastify, opts) {
     },
   });
 
+  fastify.get("/byBloodType/:bloodType", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["bloodType"],
+        properties: {
+          bloodType: { type: "string" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { bloodType } = request.params;
+
+        const requests = await fastify.prisma.requests.findMany({
+          where: {
+            blood_type_requested: bloodType,
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+
+        if (requests.length === 0) {
+          reply.code(404).send({
+            message: `No requests found for blood type ${bloodType}`,
+          });
+        } else {
+          reply.send(requests);
+        }
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch requests by blood type",
+          details: error.message,
+        });
+      }
+    },
+  });
+
   fastify.get("/notification", {
     schema: {
       tags: ["Main"],

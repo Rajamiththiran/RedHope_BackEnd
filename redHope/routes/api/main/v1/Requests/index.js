@@ -101,43 +101,60 @@ module.exports = async function (fastify, opts) {
   fastify.get("/all", {
     schema: {
       tags: ["Main"],
-      querystring: {
-        start_date: { type: "string", format: "date" },
-        end_date: { type: "string", format: "date" },
-        blood_type: { type: "string" },
+    },
+    handler: async (request, reply) => {
+      try {
+        const requests = await fastify.prisma.requests.findMany({
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+        reply.send(requests);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch all requests",
+          details: error.message,
+        });
+      }
+    },
+  });
+
+  fastify.get("/byBloodType/:bloodType", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["bloodType"],
+        properties: {
+          bloodType: { type: "string" },
+        },
       },
     },
     handler: async (request, reply) => {
       try {
-        const { start_date, end_date, blood_type } = request.query;
-        let whereClause = {};
-
-        if (start_date && end_date) {
-          whereClause.created_at = {
-            gte: new Date(start_date),
-            lte: new Date(end_date),
-          };
-        }
-
-        if (blood_type) {
-          whereClause.blood_type_requested = blood_type;
-        }
+        const { bloodType } = request.params;
 
         const requests = await fastify.prisma.requests.findMany({
-          where: whereClause,
-          select: {
-            id: true,
-            created_at: true,
-            blood_type_requested: true,
+          where: {
+            blood_type_requested: bloodType,
           },
           orderBy: {
-            created_at: "asc",
+            created_at: "desc",
           },
         });
 
-        reply.send(requests);
+        if (requests.length === 0) {
+          reply.code(404).send({
+            message: `No requests found for blood type ${bloodType}`,
+          });
+        } else {
+          reply.send(requests);
+        }
       } catch (error) {
-        reply.code(500).send({ error: "Failed to fetch requests" });
+        reply.code(500).send({
+          error: "Failed to fetch requests by blood type",
+          details: error.message,
+        });
       }
     },
   });

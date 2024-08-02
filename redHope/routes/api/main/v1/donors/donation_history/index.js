@@ -102,6 +102,27 @@ module.exports = async function (fastify, opts) {
     },
   });
 
+  fastify.get("/all", {
+    schema: {
+      tags: ["Main"],
+    },
+    handler: async (request, reply) => {
+      try {
+        const donations = await fastify.prisma.donation_history.findMany({
+          orderBy: {
+            donation_date: "desc",
+          },
+        });
+        reply.send(donations);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch all donation history records",
+          details: error.message,
+        });
+      }
+    },
+  });
+
   // Update a donation history record
   fastify.put("/:id", {
     schema: {

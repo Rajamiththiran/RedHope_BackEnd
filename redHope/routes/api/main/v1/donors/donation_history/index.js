@@ -123,6 +123,46 @@ module.exports = async function (fastify, opts) {
     },
   });
 
+  fastify.get("/byBloodType/:bloodType", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["bloodType"],
+        properties: {
+          bloodType: { type: "string" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { bloodType } = request.params;
+
+        const donations = await fastify.prisma.donation_history.findMany({
+          where: {
+            blood_type: bloodType,
+          },
+          orderBy: {
+            donation_date: "desc",
+          },
+        });
+
+        if (donations.length === 0) {
+          reply.code(404).send({
+            message: `No donation history found for blood type ${bloodType}`,
+          });
+        } else {
+          reply.send(donations);
+        }
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch donation history by blood type",
+          details: error.message,
+        });
+      }
+    },
+  });
+
   // Update a donation history record
   fastify.put("/:id", {
     schema: {

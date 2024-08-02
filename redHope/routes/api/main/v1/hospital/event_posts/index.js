@@ -12,6 +12,7 @@ module.exports = async function (fastify, opts) {
           "title",
           "start_time",
           "end_time",
+          "hospital_name",
           "location",
         ],
         properties: {
@@ -19,6 +20,7 @@ module.exports = async function (fastify, opts) {
           title: { type: "string" },
           start_time: { type: "string", format: "date-time" },
           end_time: { type: "string", format: "date-time" },
+          hospital_name: { type: "string" },
           location: { type: "string" },
           description: { type: "string" },
         },

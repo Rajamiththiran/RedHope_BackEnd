@@ -141,4 +141,36 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.get("/browse/:donorId", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["donorId"],
+        properties: {
+          donorId: { type: "integer" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { donorId } = request.params;
+        const thoughts = await fastify.prisma.thoughts.findMany({
+          where: {
+            donor_id: parseInt(donorId),
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+        reply.send(thoughts);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch thoughts",
+          details: error.message,
+        });
+      }
+    },
+  });
 };

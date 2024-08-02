@@ -116,4 +116,27 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.delete("/:id", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "integer" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        await fastify.prisma.knowledges.delete({
+          where: { id: parseInt(request.params.id) },
+        });
+        reply.code(204).send();
+      } catch (error) {
+        reply.code(500).send({ error: "Failed to delete knowledge" });
+      }
+    },
+  });
 };

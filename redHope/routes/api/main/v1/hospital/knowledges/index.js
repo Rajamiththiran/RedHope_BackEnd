@@ -139,4 +139,36 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.get("/browse/:hospitalId", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["hospitalId"],
+        properties: {
+          hospitalId: { type: "integer" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { hospitalId } = request.params;
+        const knowledges = await fastify.prisma.knowledges.findMany({
+          where: {
+            hospital_id: parseInt(hospitalId),
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+        reply.send(knowledges);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to fetch knowledges",
+          details: error.message,
+        });
+      }
+    },
+  });
 };

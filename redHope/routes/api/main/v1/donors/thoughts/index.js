@@ -81,4 +81,41 @@ module.exports = async function (fastify, opts) {
       }
     },
   });
+
+  fastify.put("/:id", {
+    schema: {
+      tags: ["Main"],
+      params: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: { type: "integer" },
+        },
+      },
+      body: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          thought: { type: "string" },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const updatedThought = await fastify.prisma.thoughts.update({
+          where: { id: parseInt(request.params.id) },
+          data: {
+            ...request.body,
+            modified_at: moment().toISOString(),
+          },
+        });
+        reply.send(updatedThought);
+      } catch (error) {
+        reply.code(500).send({
+          error: "Failed to update thought",
+          details: error.message,
+        });
+      }
+    },
+  });
 };

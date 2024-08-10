@@ -14,31 +14,36 @@ model migrations {
 }
 
 model hospitals {
-  id           Int       @id @default(autoincrement()) @db.UnsignedInt
-  name         String    @db.VarChar(255)
-  address      String    @db.Text
-  email        String    @unique(map: "email") @db.VarChar(255)
-  phone_number String    @db.VarChar(255)
-  country_code String    @db.VarChar(255)
-  password     String    @db.VarChar(255)
-  created_at   DateTime? @db.Timestamp(0)
-  modified_at  DateTime? @db.Timestamp(0)
-  deleted_at   DateTime? @db.Timestamp(0)
+  id           Int           @id @default(autoincrement()) @db.UnsignedInt
+  name         String        @db.VarChar(255)
+  address      String        @db.Text
+  email        String        @unique(map: "email") @db.VarChar(255)
+  phone_number String        @db.VarChar(255)
+  country_code String        @db.VarChar(255)
+  password     String        @db.VarChar(255)
+  created_at   DateTime?     @db.Timestamp(0)
+  modified_at  DateTime?     @db.Timestamp(0)
+  deleted_at   DateTime?     @db.Timestamp(0)
+  event_posts  event_posts[]
+  knowledges   knowledges[]
 }
 
 model donors {
-  id           Int       @id @default(autoincrement()) @db.UnsignedInt
-  name         String    @db.VarChar(255)
-  email        String    @unique(map: "email") @db.VarChar(255)
-  password     String    @db.VarChar(255)
-  address      String    @db.Text
-  phone_number String    @db.VarChar(255)
-  country_code String    @db.VarChar(255)
-  blood_type   String    @db.VarChar(255)
-  fcm_token    String?   @db.VarChar(255)
-  created_at   DateTime? @db.Timestamp(0)
-  modified_at  DateTime? @db.Timestamp(0)
-  deleted_at   DateTime? @db.Timestamp(0)
+  id               Int                @id @default(autoincrement()) @db.UnsignedInt
+  name             String             @db.VarChar(255)
+  email            String             @unique(map: "email") @db.VarChar(255)
+  password         String             @db.VarChar(255)
+  address          String             @db.Text
+  phone_number     String             @db.VarChar(255)
+  country_code     String             @db.VarChar(255)
+  blood_type       String             @db.VarChar(255)
+  fcm_token        String?            @db.VarChar(255)
+  created_at       DateTime?          @db.Timestamp(0)
+  modified_at      DateTime?          @db.Timestamp(0)
+  deleted_at       DateTime?          @db.Timestamp(0)
+  donation_history donation_history[]
+  events           events[]
+  thoughts         thoughts[]
 }
 
 model requests {
@@ -79,6 +84,7 @@ model donation_history {
   created_at    DateTime  @default(now()) @db.Timestamp(0)
   modified_at   DateTime  @default(now()) @db.Timestamp(0)
   deleted_at    DateTime? @db.Timestamp(0)
+  donors        donors    @relation(fields: [donor_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "donation_history_donor_id_fk")
 
   @@index([donor_id], map: "donation_history_donor_id_fk")
 }
@@ -96,6 +102,7 @@ model events {
   created_at  DateTime  @default(now()) @db.Timestamp(0)
   modified_at DateTime  @default(now()) @db.Timestamp(0)
   deleted_at  DateTime? @db.Timestamp(0)
+  donors      donors    @relation(fields: [donor_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_donor_id_fk")
 
   @@index([donor_id], map: "events_donor_id_fk")
 }
@@ -112,6 +119,7 @@ model event_posts {
   created_at    DateTime  @default(now()) @db.Timestamp(0)
   modified_at   DateTime  @default(now()) @db.Timestamp(0)
   deleted_at    DateTime? @db.Timestamp(0)
+  hospitals     hospitals @relation(fields: [hospital_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "event_posts_hospital_id_fk")
 
   @@index([hospital_id], map: "event_posts_hospital_id_fk")
 }
@@ -123,6 +131,7 @@ model knowledges {
   created_at  DateTime  @default(now()) @db.Timestamp(0)
   modified_at DateTime  @default(now()) @db.Timestamp(0)
   deleted_at  DateTime? @db.Timestamp(0)
+  hospitals   hospitals @relation(fields: [hospital_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "knowledges_hospital_id_fk")
 
   @@index([hospital_id], map: "knowledges_hospital_id_fk")
 }
@@ -135,6 +144,7 @@ model thoughts {
   created_at  DateTime  @default(now()) @db.Timestamp(0)
   modified_at DateTime  @default(now()) @db.Timestamp(0)
   deleted_at  DateTime? @db.Timestamp(0)
+  donors      donors    @relation(fields: [donor_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "thoughts_donor_id_fk")
 
   @@index([donor_id], map: "thoughts_donor_id_fk")
 }

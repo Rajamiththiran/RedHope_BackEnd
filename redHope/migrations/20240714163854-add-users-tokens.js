@@ -28,7 +28,8 @@ exports.up = function (db) {
       notNull: true,
     },
     token: {
-      type: "text",
+      type: "string",
+      length: 255,
       notNull: true,
       unique: true,
     },

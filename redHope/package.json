@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "node --test test/**/*.test.js",
+    "test": "node test/run-all-tests.js",
     "start": "fastify start -a 0.0.0.0 -l info app.js",
     "dev": "fastify start -w -l info -P app.js"
   },
@@ -45,5 +45,8 @@
     "mysql2": "^3.10.3",
     "prisma": "^5.16.2",
     "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "tap": "^21.0.0"
   }
 }
